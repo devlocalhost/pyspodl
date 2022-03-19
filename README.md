@@ -4,16 +4,7 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 
 # screenshots
 
-![main](img1.png)
-![playlist info](img2.png)
-![track info](img3.png)
-![playlist download](img4.png)
-![track info example](img5.png)
-![playlist info example](img6.png)
-![playlist info example 2](img7.png)
-![search result](img8.png)
-![playlist downloading](img9.png)
-![playlist downloading 2](img10.png)
+<p>click <a href="screenshots.md">here</a></p>
 
 # what can you do?
 
