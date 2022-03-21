@@ -24,7 +24,7 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 ![mainpy file lines](mainpyfile.png)
 ![gettoken file lines](gettokenfile.png)
 + make sure you have python 3.6, and if on windows, **remove** the first line in __main.py__ file
-+ make sure [the module](https://github.com/kokarare1212/librespot-python) and git is installed, then `pip3 install git+https://github.com/kokarare1212/librespot-python`
++ make sure git is installed, then `pip3 install git+https://github.com/kokarare1212/librespot-python`
 + python3 main.py (or on linux chmod +x main.py && ./main.py)
 
 ---
