@@ -8,25 +8,24 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 
 # what can you do?
 
-+ download songs
-+ download playlists
++ download songs and playlists 
 + get playlist or track info
-+ search
++ search for tracks
 
 # how to use
 
-+ FIRST, youll need an client id and secret key. Get them by making a application on [spotify dashboard](https://developer.spotify.com/dashboard/applications)
-+ create an application and copy client id and secret
-![create app](createapp.png)
-![client id and secret](https://i.imgur.com/Qfl2wxd.png)
++ First, you'll need a client ID and secret key. Get them by making a application in [spotify dashboard](https://developer.spotify.com/dashboard/applications)
++ Create an application and copy the client ID and secret
+![creating an application in Spotify dashboard](createapp.png)
+![copying client id and secret](https://i.imgur.com/Qfl2wxd.png)
 + git clone the repo
-+ paste client id and secret in `main.py` on line 42 and 43 and `gettoken.py` on line 5 and 6
++ Paste client id and secret in `main.py` on line 42 and 43, and in `gettoken.py` on line 5 and 6
 ![mainpy file lines](mainpyfile.png)
 ![gettoken file lines](gettokenfile.png)
-+ make sure you have python 3.6, and if on windows, **remove** the first line in __main.py__ file
-+ make sure git is installed, then `pip3 install git+https://github.com/kokarare1212/librespot-python`
++ Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
 + python3 main.py (or on linux chmod +x main.py && ./main.py)
 
 ---
 
-youre free to fork and make PR's. if youre forking, **PLEASE** leave [this repos link](https://github.com/devlocalhost/pyspodl) on your readme, **AND** [kokarare1212's module repo link](https://github.com/kokarare1212/librespot-python). if you face any issues, **PLEASE** open an issue, or submit a PR
+Feel free to fork or make PR's (Pull requests). If you're forking, please leave [this repos link](https://github.com/devlocalhost/pyspodl) on your readme, and [kokarare1212's module repo link](https://github.com/kokarare1212/librespot-python). 
+If you face any issues/want to report a bug, or want to request a feature, open a issue
