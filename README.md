@@ -20,7 +20,7 @@ Friday, August 12, 2022
 
 + First, you'll need a client ID and secret key. Get them by making a application in [spotify dashboard](https://developer.spotify.com/dashboard/applications)
 + Create an application and copy the client ID and secret
-![creating an application in Spotify dashboard](createapp.png)
+![creating an application in Spotify dashboard](screens/createapp.png)
 ![copying client id and secret](https://i.imgur.com/Qfl2wxd.png)
 + git clone the repo
 + Paste client id and secret in `pyspodl` in line 42 and 43, and in `gettoken` in line 5 and 6
