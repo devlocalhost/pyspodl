@@ -8,8 +8,8 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 
 # what can you do?
 
-+ download songs and playlists 
-+ get playlist or track info
++ download songs, playlists and albums (new)
++ get playlist, track and album (new) info
 + search for tracks
 
 # how to use
@@ -19,11 +19,11 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 ![creating an application in Spotify dashboard](createapp.png)
 ![copying client id and secret](https://i.imgur.com/Qfl2wxd.png)
 + git clone the repo
-+ Paste client id and secret in `main.py` on line 42 and 43, and in `gettoken.py` on line 5 and 6
++ Paste client id and secret in `main.py` in line 42 and 43, and in `gettoken.py` in line 5 and 6
 ![mainpy file lines](mainpyfile.png)
 ![gettoken file lines](gettokenfile.png)
 + Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
-+ python3 main.py (or on linux chmod +x main.py && ./main.py)
++ python3 pyspodl (or on linux chmod +x pyspodl && ./pyspodl)
 
 ---
 
