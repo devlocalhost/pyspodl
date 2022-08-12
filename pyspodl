@@ -365,7 +365,7 @@ def track_downloader(uri, token):
             print(f"{title} by {artist} | Downloaded")
             set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
 
-    except (PermissionError, FileExistsError, FileNotFoundError) as exc:
+    except (KeyError,PermissionError, FileExistsError, FileNotFoundError) as exc:
         print(f'ERR: {title} by {artist}: {exc}\nCant download...')
 
 def album_download(album_id, token):
@@ -419,7 +419,7 @@ def album_download(album_id, token):
                 print(f"{title} by {artist} | Downloaded")
                 set_metadata(f'album_{album_id}/{filename}', trackid, token, albumdir)
 
-        except (PermissionError, FileExistsError, FileNotFoundError) as exc:
+        except (KeyError, PermissionError, FileExistsError, FileNotFoundError) as exc:
             print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
 def playlist_download(playlist_id, token):
@@ -463,10 +463,10 @@ def playlist_download(playlist_id, token):
                         print(f"{title} by {artist} | Downloaded")
                         set_metadata(f'playlist_{playlist_id}/{filename}', trackid, token, playdir)
 
-                except (PermissionError, FileExistsError, FileNotFoundError) as exc:
+                except (KeyError, PermissionError, FileExistsError, FileNotFoundError) as exc:
                     print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
-            except (PermissionError, FileExistsError, FileNotFoundError):
+            except (KeyError, PermissionError, FileExistsError, FileNotFoundError):
                 pass
 
 def writedetails():
