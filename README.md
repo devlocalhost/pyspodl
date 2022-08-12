@@ -19,7 +19,7 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 ![creating an application in Spotify dashboard](createapp.png)
 ![copying client id and secret](https://i.imgur.com/Qfl2wxd.png)
 + git clone the repo
-+ Paste client id and secret in `main.py` in line 42 and 43, and in `gettoken.py` in line 5 and 6
++ Paste client id and secret in `pyspodl` in line 42 and 43, and in `gettoken.py` in line 5 and 6
 ![mainpy file lines](mainpyfile.png)
 ![gettoken file lines](gettokenfile.png)
 + Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
