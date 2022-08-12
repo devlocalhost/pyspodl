@@ -42,8 +42,7 @@ def generate_new_token():
     client_id = 'client_id'
     client_secret = 'client_secret'
 
-    resp = post('https://accounts.spotify.com/api/token', {'grant_type': 'client_credentials',
-                'client_id': client_id, 'client_secret': client_secret}).json()
+    resp = post('https://accounts.spotify.com/api/token', {'grant_type': 'client_credentials', 'client_id': client_id, 'client_secret': client_secret}).json()
 
     odata['token'] = resp['access_token']
 
@@ -53,9 +52,7 @@ def generate_new_token():
             newdata.flush()
 
     except (PermissionError, FileNotFoundError) as exc:
-        print(f'There was an error updating the file. Do you have write permissions?\n \
-                Heres the token anyway: {resp["access_token"]}. \
-                Replace it with the old "token" in .data/account.json\n{exc}')
+        print(f'There was an error updating the file. Do you have write permissions?\nHeres the token anyway: {resp["access_token"]}. Replace it with the old "token" in .data/account.json\n{exc}')
 
     input('Token has been succesfully updated\nType enter to continue...')
     main()
@@ -96,8 +93,7 @@ def set_metadata(filename, uri, token, pathfilename):
 
     track_file = load_file(filename)
 
-    metadata = {'title': title, 'artist': artist, 'totaltracks': total_tracks,
-                'album': album_name, 'albumartist': album_artists, 'year': year}
+    metadata = {'title': title, 'artist': artist, 'totaltracks': total_tracks, 'album': album_name, 'albumartist': album_artists, 'year': year}
 
     print('Downloading cover...')
 
@@ -163,10 +159,7 @@ def search_track(term, token):
         elif details['preview_url'] is None:
             previewurl = 'https://youtu.be/dQw4w9WgXcQ'
 
-        print(f'{trackname} by {artistname}\n \
-                URI: {trackuri}\n \
-                ID: {trackid}\n \
-                Short preview: {previewurl}\n--------------------')
+        print(f'{trackname} by {artistname}\nURI: {trackuri}\nID: {trackid}\nShort preview: {previewurl}\n--------------------')
 
     input(f'\n{totalresults} total results\nType enter to go back...')
     clearscr()
@@ -210,13 +203,7 @@ def track_info(trackid, token):
     albumreleased = resp['album']['release_date']
     albumtotaltracks = resp['album']['total_tracks']
 
-    print(f'{trackname} by {artistname}\n \
-            Duration? {duration}\n \
-            URL? {trackurl}\n \
-            Is explicit? {isexplicit}\n \
-            Preview link? {track_pre}\n \
-            From album "{albumname}" which was released at {albumreleased} and has total {albumtotaltracks} tracks\n \
-            Album link? {albumurl}')
+    print(f'{trackname} by {artistname}\nDuration? {duration}\nURL? {trackurl}\nIs explicit? {isexplicit}\nPreview link? {track_pre}\nFrom album "{albumname}" which was released at {albumreleased} and has total {albumtotaltracks} tracks\nAlbum link? {albumurl}')
 
     input('Type enter to continue')
 
@@ -270,12 +257,7 @@ def album_info(album_id, token):
             if tracks['explicit'] is True:
                 isexplicit = 'Yes'
 
-            print(f'{trackname} by {trackartist}\n \
-                    Link? {tracklink}\n \
-                    Duration? {duration}\n \
-                    Is explicit? {isexplicit}\n \
-                    Track ID? {trackid}\n \
-                    Preview link? {previewurl}')
+            print(f'{trackname} by {trackartist}\nLink? {tracklink}\nDuration? {duration}\nIs explicit? {isexplicit}\nTrack ID? {trackid}\nPreview link? {previewurl}')
 
             print('--------------------------------')
 
@@ -376,9 +358,7 @@ def track_downloader(uri, token):
             print(f'Skipping {artist} - {title}, already downloaded\n')
 
         else:
-            with open(f'tracks/{filename}', 'wb') as filedl, \
-            tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, \
-            bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
+            with open(f'tracks/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
                 for _ in range(int(total_size / 5000) + 1):
                     tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
 
@@ -432,9 +412,7 @@ def album_download(album_id, token):
                 print(f'Skipping {title} by {artist}, already downloaded\n')
 
             else:
-                with open(f'album_{album_id}/{filename}', 'wb') as filedl, \
-                tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, \
-                bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
+                with open(f'album_{album_id}/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
                     for _ in range(int(total_size / 5000) + 1):
                         tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
 
@@ -478,9 +456,7 @@ def playlist_download(playlist_id, token):
                         print(f'{title} by {artist} is already downloaded, skipping\n')
 
                     else:
-                        with open(f'playlist_{playlist_id}/{filename}', 'wb') as filedl, \
-                        tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, \
-                        bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
+                        with open(f'playlist_{playlist_id}/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
                             for _ in range(int(total_size / 5000) + 1):
                                 tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
 
@@ -494,8 +470,7 @@ def playlist_download(playlist_id, token):
                 pass
 
 def writedetails():
-    print('MAKE SURE YOU ENTER THE CORRECT DETAILS! THE PROGRAM DOES NOT CHECK IF YOUR DETAILS ARE CORRECT, \
-            But when downloading a song, it will raise an exception/error if your details are `incorrect')
+    print('MAKE SURE YOU ENTER THE CORRECT DETAILS! THE PROGRAM DOES NOT CHECK IF YOUR DETAILS ARE CORRECT, But when downloading a song, it will raise an exception/error if your details are incorrect')
     print('Note: You wont be able to see your password and API token while typing. If you dont have a API Token, run the `gettoken` file\n')
 
     email = input('Email\n -> ')
@@ -522,15 +497,7 @@ def main():
     if ask == '':
         clearscr()
 
-        askchoice = input('Type\n \
-                - dt to download a track\n \
-                - t to get track info\n \
-                - p to get playlist info\n \
-                - pd to download a playlist\n \
-                - s to search\n \
-                - ab to get album info\n \
-                - abd to download a album\n \
-                - howid for how to get a tracks, playlist or album ID\n -> ')
+        askchoice = input('Type\n - dt to download a track\n - t to get track info\n - p to get playlist info\n - pd to download a playlist\n - s to search\n - ab to get album info\n - abd to download a album\n - howid for how to get a tracks, playlist or album ID\n -> ')
 
         if askchoice.lower() == 'dt':
             clearscr()
@@ -591,11 +558,7 @@ def main():
         elif askchoice.lower() == 'howid':
             clearscr()
 
-            input('To get the ID of a song, album or playlist, first copy the link\n \
-                    After that, paste it somewhere. It should look lile this:\n \
-                    https://open.spotify.com/track/0MxEnGqgMlVZn0lD1k61kR?si=YXgWaWTWQYS9M1PAZvNblg&utm_source=copy-link\n \
-                    The random characters after "/track/" and before "?si=" is the ID ("0MxEnGqgMlVZn0lD1k61kR"). Copy that, and youre ready to go\n \
-                    Press enter to continue')
+            input('To get the ID of a song, album or playlist, first copy the link\n After that, paste it somewhere. It should look lile this:\n  https://open.spotify.com/track/0MxEnGqgMlVZn0lD1k61kR?si=YXgWaWTWQYS9M1PAZvNblg&utm_source=copy-link\n The random characters after "/track/" and before "?si=" is the ID ("0MxEnGqgMlVZn0lD1k61kR"). Copy that, and youre ready to go\nPress enter to continue')
 
         elif askchoice.lower() != '':
             print('Invalid input')
