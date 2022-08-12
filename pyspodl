@@ -116,13 +116,13 @@ def set_metadata(filename, uri, token, pathfilename):
             track_file.save()
 
     except:
-          pass
+        pass
 
     try:
         remove(f'{pathfilename}/cover.jpg')
 
     except:
-         pass
+        pass
 
 def search_track(term, token):
     clearscr()
@@ -182,10 +182,10 @@ def track_info(trackid, token):
         pass
 
     if resp['explicit'] is False:
-       isexplicit = 'No'
+        isexplicit = 'No'
 
     if resp['explicit'] is True:
-       isexplicit = 'Yes'
+        isexplicit = 'Yes'
 
     duration = datetime.fromtimestamp(resp['duration_ms'] / 1000.0).strftime('%M minutes and %S seconds')
     trackurl = resp['external_urls']['spotify']
@@ -343,30 +343,30 @@ def track_downloader(uri, token):
         pass
 
     try:
-       stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
+        stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
 
-       title = resp['name']
-       artist = resp['album']['artists'][0]['name']
+        title = resp['name']
+        artist = resp['album']['artists'][0]['name']
 
-       print(f"Downloading {title} by {artist}...")
+        print(f"Downloading {title} by {artist}...")
 
-       total_size = stream.input_stream.size
+        total_size = stream.input_stream.size
 
-       filename = clean_filename(f"{artist}_-_{title}.mp3")
+        filename = clean_filename(f"{artist}_-_{title}.mp3")
 
-       if filename in listdir('tracks'):
-           print(f'Skipping {artist} - {title}, already downloaded\n')
+        if filename in listdir('tracks'):
+            print(f'Skipping {artist} - {title}, already downloaded\n')
 
-       else:
-           with open(f'tracks/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
-               for _ in range(int(total_size / 5000) + 1):
-                   tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
+        else:
+            with open(f'tracks/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
+                for _ in range(int(total_size / 5000) + 1):
+                    tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
 
-           print(f"{title} by {artist} | Downloaded")
-           set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
+            print(f"{title} by {artist} | Downloaded")
+            set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
 
     except Exception as exc:
-                print(f'ERR: {title} by {artist}: {exc}\nCant download...')
+        print(f'ERR: {title} by {artist}: {exc}\nCant download...')
 
 def album_download(album_id, token):
     albumdir = f'album_{album_id}'
@@ -525,11 +525,11 @@ def main():
             track_info(tid, TKN)
 
         elif askchoice.lower() == 's':
-             clearscr()
+            clearscr()
 
-             srch = input('I want to search for...\n -> ')
+            srch = input('I want to search for...\n -> ')
 
-             search_track(srch, TKN)
+            search_track(srch, TKN)
 
         elif askchoice.lower() == 'p':
             clearscr()
@@ -556,9 +556,9 @@ def main():
             album_download(albid, TKN)
 
         elif askchoice.lower() == 'howid':
-              clearscr()
+            clearscr()
 
-              input('To get the ID of a song, album or playlist, first copy the link\n After that, paste it somewhere. It should look lile this:\n  https://open.spotify.com/track/0MxEnGqgMlVZn0lD1k61kR?si=YXgWaWTWQYS9M1PAZvNblg&utm_source=copy-link\n The random characters after "/track/" and before "?si=" is the ID ("0MxEnGqgMlVZn0lD1k61kR"). Copy that, and youre ready to go\nPress enter to continue')
+            input('To get the ID of a song, album or playlist, first copy the link\n After that, paste it somewhere. It should look lile this:\n  https://open.spotify.com/track/0MxEnGqgMlVZn0lD1k61kR?si=YXgWaWTWQYS9M1PAZvNblg&utm_source=copy-link\n The random characters after "/track/" and before "?si=" is the ID ("0MxEnGqgMlVZn0lD1k61kR"). Copy that, and youre ready to go\nPress enter to continue')
 
         elif askchoice.lower() != '':
             print('Invalid input')
