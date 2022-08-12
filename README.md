@@ -27,6 +27,7 @@ Friday, August 12, 2022
 ![mainpy file lines](screens/mainpyfile.png)
 ![gettoken file lines](screens/gettokenfile.png)
 + Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
++ You will also need to install [music-tag](https://pypi.org/project/music-tag/) and [pil (pillow)](https://pypi.org/project/Pillow/): `pip install music-tag Pillow`
 + python3 pyspodl (or on linux chmod +x pyspodl && ./pyspodl)
 
 ---
