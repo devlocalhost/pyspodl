@@ -36,7 +36,7 @@ def clearscr():
             print('Clear command not defined!')
 
 def generate_new_token():
-    with open('.data/account.json', 'r') as oldata:
+    with open('.data/account.json', 'r', encoding='utf-8') as oldata:
         odata = load(oldata)
 
     client_id = 'client_id'
@@ -47,7 +47,7 @@ def generate_new_token():
     odata['token'] = resp['access_token']
 
     try:
-        with open('.data/account.json', 'w') as newdata:
+        with open('.data/account.json', 'w', encoding='utf-8') as newdata:
             dump(odata, newdata)
             newdata.flush()
 
@@ -479,7 +479,7 @@ def writedetails():
 
     makedirs('.data', exist_ok=True)
 
-    with open('.data/account.json', 'w+') as fdata:
+    with open('.data/account.json', 'w+', encoding='utf-8') as fdata:
         fdata.write(dumps({"email": email, "password": str(b64encode(passwd.encode("utf-8")), "utf-8"), "token": token})) #base64 because i have to decrypt
         fdata.flush()
 
@@ -588,7 +588,7 @@ if __name__ == '__main__':
     clearscr()
 
     try:
-        with open('.data/account.json', 'r') as file:
+        with open('.data/account.json', 'r', encoding='utf-8') as file:
             print('Reading account info...')
 
             data = loads(file.read())
