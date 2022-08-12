@@ -51,7 +51,7 @@ def generate_new_token():
             dump(odata, newdata)
             newdata.flush()
 
-    except Exception as exc:
+    except (PermissionError, FileNotFoundError) as exc:
         print(f'There was an error updating the file. Do you have write permissions?\nHeres the token anyway: {resp["access_token"]}. Replace it with the old "token" in .data/account.json\n{exc}')
 
     input('Token has been succesfully updated\nType enter to continue...')
@@ -115,13 +115,13 @@ def set_metadata(filename, uri, token, pathfilename):
 
             track_file.save()
 
-    except:
+    except (FileNotFoundError, PermissionError):
         pass
 
     try:
         remove(f'{pathfilename}/cover.jpg')
 
-    except:
+    except (FileNotFoundError, PermissionError):
         pass
 
 def search_track(term, token):
@@ -365,7 +365,7 @@ def track_downloader(uri, token):
             print(f"{title} by {artist} | Downloaded")
             set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
 
-    except Exception as exc:
+    except (PermissionError, FileExistsError, FileNotFoundError) as exc:
         print(f'ERR: {title} by {artist}: {exc}\nCant download...')
 
 def album_download(album_id, token):
@@ -419,7 +419,7 @@ def album_download(album_id, token):
                 print(f"{title} by {artist} | Downloaded")
                 set_metadata(f'album_{album_id}/{filename}', trackid, token, albumdir)
 
-        except Exception as exc:
+        except (PermissionError, FileExistsError, FileNotFoundError) as exc:
             print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
 def playlist_download(playlist_id, token):
@@ -463,10 +463,10 @@ def playlist_download(playlist_id, token):
                         print(f"{title} by {artist} | Downloaded")
                         set_metadata(f'playlist_{playlist_id}/{filename}', trackid, token, playdir)
 
-                except Exception as exc:
+                except (PermissionError, FileExistsError, FileNotFoundError) as exc:
                     print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
-            except:
+            except (PermissionError, FileExistsError, FileNotFoundError):
                 pass
 
 def writedetails():
