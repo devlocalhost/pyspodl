@@ -7,10 +7,10 @@ from getpass import getpass
 from base64 import b64encode, b64decode
 from json import dumps, loads, dump, load
 from time import sleep
+from sys import exit
 from requests import get, post
 from music_tag import load_file
 from tqdm import tqdm
-from sys import exit
 
 from librespot.core import Session
 from librespot.metadata import TrackId
