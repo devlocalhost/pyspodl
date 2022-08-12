@@ -42,7 +42,7 @@ def generate_new_token():
     client_id = 'client_id'
     client_secret = 'client_secret'
 
-    resp = post('https://accounts.spotify.com/api/token', {'grant_type': 'client_credentials', \
+    resp = post('https://accounts.spotify.com/api/token', {'grant_type': 'client_credentials',
                 'client_id': client_id, 'client_secret': client_secret}).json()
 
     odata['token'] = resp['access_token']
