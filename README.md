@@ -1,4 +1,4 @@
-# pyspodl, a python script to download songs or playlists from spotify
+# pyspodl, a python script to download songs, playlists and albums from spotify
 
 using [librespot-python by kokarare1212](https://github.com/kokarare1212/librespot-python)'s module
 
