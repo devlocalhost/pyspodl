@@ -7,10 +7,10 @@ from getpass import getpass
 from base64 import b64encode, b64decode
 from json import dumps, loads, dump, load
 from time import sleep
+from sys import exit
 from requests import get, post
 from music_tag import load_file
 from tqdm import tqdm
-from sys import exit
 
 from librespot.core import Session
 from librespot.metadata import TrackId
@@ -36,7 +36,7 @@ def clearscr():
             print('Clear command not defined!')
 
 def generate_new_token():
-    with open('.data/account.json', 'r') as oldata:
+    with open('.data/account.json', 'r', encoding='utf-8') as oldata:
         odata = load(oldata)
 
     client_id = 'client_id'
@@ -47,11 +47,11 @@ def generate_new_token():
     odata['token'] = resp['access_token']
 
     try:
-        with open('.data/account.json', 'w') as newdata:
+        with open('.data/account.json', 'w', encoding='utf-8') as newdata:
             dump(odata, newdata)
             newdata.flush()
 
-    except Exception as exc:
+    except (PermissionError, FileNotFoundError) as exc:
         print(f'There was an error updating the file. Do you have write permissions?\nHeres the token anyway: {resp["access_token"]}. Replace it with the old "token" in .data/account.json\n{exc}')
 
     input('Token has been succesfully updated\nType enter to continue...')
@@ -59,9 +59,9 @@ def generate_new_token():
 
 def valid_token(token):
     print('Checking if token is valid...')
-    
+
     headr = {"Authorization": f"Bearer {token}"}
-    
+
     resp = get('https://api.spotify.com/v1/search?q=home+resonance&type=track', headers=headr)
 
     if resp.status_code == 401:
@@ -73,15 +73,15 @@ def valid_token(token):
         sleep(0.3)
         clearscr()
         main()
-        
+
 def clean_filename(name):
     return name.replace(' ', '_').replace('(', '').replace(')', '').replace('*', '').replace('&', 'and').replace('#', '').replace('$', 'S').replace('!', '').replace('"', '').replace("'", '').replace('ft.', 'ft').replace('feat.', 'feat')
-    
+
 def set_metadata(filename, uri, token, pathfilename):
     headr = {"Authorization": f"Bearer {token}"}
-    
+
     resp = get(f'https://api.spotify.com/v1/tracks/{uri}', headers=headr).json()
-    
+
     album_artists = ', '.join(i['name'] for i in resp['artists'])
     #track_num = resp['track_number']
     #disc_num = resp['disc_number']
@@ -90,45 +90,45 @@ def set_metadata(filename, uri, token, pathfilename):
     album_name = resp['album']['name']
     year = resp['album']['release_date'].split('-')[0]
     total_tracks = resp['album']['total_tracks']
-    
+
     track_file = load_file(filename)
 
     metadata = {'title': title, 'artist': artist, 'totaltracks': total_tracks, 'album': album_name, 'albumartist': album_artists, 'year': year}
-    
+
     print('Downloading cover...')
-    
+
     with open(f'{pathfilename}/cover.jpg', 'wb') as cover_img:
         cover_img.write(get(resp['album']['images'][0]['url']).content)
-        
+
     print('Editing metadata...')
-    
+
     for key, value in metadata.items():
         track_file[key] = value
-        
+
     print('Saving cover...')
-    
+
     try:
         with open(f'{pathfilename}/cover.jpg', 'rb') as img_in:
             track_file['artwork'] = img_in.read()
-                	
+
             print('Done\n')
-                    
+
             track_file.save()
-                
-    except:
-          pass
-          
+
+    except (FileNotFoundError, PermissionError):
+        pass
+
     try:
         remove(f'{pathfilename}/cover.jpg')
-                
-    except:
-         pass
+
+    except (FileNotFoundError, PermissionError):
+        pass
 
 def search_track(term, token):
     clearscr()
-    
+
     headr = {"Authorization": f"Bearer {token}"}
-    
+
     resp = get(f'https://api.spotify.com/v1/search?q={term.replace(" ", "%20")}&type=track', headers=headr).json()
 
     try:
@@ -152,7 +152,7 @@ def search_track(term, token):
         artistname = details['album']['artists'][0]['name']
         trackname = details['name']
         trackid = details['id']
-        
+
         if details['preview_url'] is not None:
             previewurl = details['preview_url']
 
@@ -165,12 +165,12 @@ def search_track(term, token):
     clearscr()
 
     main()
-        
+
 def track_info(trackid, token):
     clearscr()
-    
+
     headr = {"Authorization": f"Bearer {token}"}
-    
+
     resp = get(f'https://api.spotify.com/v1/tracks/{trackid}', headers=headr).json()
 
     try:
@@ -182,21 +182,21 @@ def track_info(trackid, token):
         pass
 
     if resp['explicit'] is False:
-       isexplicit = 'No'
+        isexplicit = 'No'
 
     if resp['explicit'] is True:
-       isexplicit = 'Yes'
+        isexplicit = 'Yes'
 
     duration = datetime.fromtimestamp(resp['duration_ms'] / 1000.0).strftime('%M minutes and %S seconds')
     trackurl = resp['external_urls']['spotify']
     trackname = resp['name']
-    
+
     if resp['preview_url'] is not None:
         track_pre = resp['preview_url']
 
     elif resp['preview_url'] is None:
         track_pre = 'https://youtu.be/dQw4w9WgXcQ'
-    
+
     artistname = resp['album']['artists'][0]['name']
     albumurl = resp['album']['external_urls']['spotify']
     albumname = resp['album']['name']
@@ -204,9 +204,9 @@ def track_info(trackid, token):
     albumtotaltracks = resp['album']['total_tracks']
 
     print(f'{trackname} by {artistname}\nDuration? {duration}\nURL? {trackurl}\nIs explicit? {isexplicit}\nPreview link? {track_pre}\nFrom album "{albumname}" which was released at {albumreleased} and has total {albumtotaltracks} tracks\nAlbum link? {albumurl}')
-    
+
     input('Type enter to continue')
-    
+
     clearscr()
     main()
 
@@ -221,13 +221,13 @@ def album_info(album_id, token):
 
     except KeyError:
         pass
-        
+
     artistname = info['artists'][0]['name']
     albumlink = info['external_urls']['spotify']
     albumname = info['name']
     albumrelease = info['release_date']
     totalsongs = info['total_tracks']
-        
+
     print(f'{albumname} by {artistname}, released in {albumrelease} with {totalsongs} total tracks\nLink: {albumlink}\n')
 
     target = info['tracks']['total']
@@ -258,9 +258,9 @@ def album_info(album_id, token):
                 isexplicit = 'Yes'
 
             print(f'{trackname} by {trackartist}\nLink? {tracklink}\nDuration? {duration}\nIs explicit? {isexplicit}\nTrack ID? {trackid}\nPreview link? {previewurl}')
-            
+
             print('--------------------------------')
-    
+
     input('Type enter to go back...')
     clearscr()
 
@@ -287,7 +287,7 @@ def playlist_info(playlist_id, token):
         print(f"{info['name']} made by {info['owner']['display_name']} | {info['description']} - {playlist_id} (Playlist ID)")
 
     print(f"{info['tracks']['total']} tracks in total, {info['followers']['total']} people are following this playlist")
-    
+
     print('--------------------------------')
 
     target = info['tracks']['total']
@@ -318,17 +318,17 @@ def playlist_info(playlist_id, token):
                 isexplicit = 'Yes'
 
             print(f'{trackname} by {trackartist}\nLink? {tracklink}\nDuration? {duration}\nIs explicit? {isexplicit}\nTrack ID? {trackid}\nPreview link? {previewurl}')
-            
+
             print('--------------------------------')
-    
+
     input('Type enter to go back...')
     clearscr()
 
     main()
-    
+
 def track_downloader(uri, token):
     makedirs('tracks', exist_ok=True)
-    
+
     track_id = TrackId.from_uri(f"spotify:track:{uri}")
     headr = {"Authorization": f"Bearer {token}"}
 
@@ -341,37 +341,37 @@ def track_downloader(uri, token):
 
     except KeyError:
         pass
-    
+
     try:
-       stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
-       
-       title = resp['name']
-       artist = resp['album']['artists'][0]['name']
-        
-       print(f"Downloading {title} by {artist}...")
-    
-       total_size = stream.input_stream.size
-        
-       filename = clean_filename(f"{artist}_-_{title}.mp3")
-        
-       if filename in listdir('tracks'):
-           print(f'Skipping {artist} - {title}, already downloaded\n')
-    
-       else:
-           with open(f'tracks/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
-               for _ in range(int(total_size / 5000) + 1):
-                   tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
-                    
-           print(f"{title} by {artist} | Downloaded")
-           set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
-            
-    except Exception as exc:
-                print(f'ERR: {title} by {artist}: {exc}\nCant download...')
-    
+        stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
+
+        title = resp['name']
+        artist = resp['album']['artists'][0]['name']
+
+        print(f"Downloading {title} by {artist}...")
+
+        total_size = stream.input_stream.size
+
+        filename = clean_filename(f"{artist}_-_{title}.mp3")
+
+        if filename in listdir('tracks'):
+            print(f'Skipping {artist} - {title}, already downloaded\n')
+
+        else:
+            with open(f'tracks/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
+                for _ in range(int(total_size / 5000) + 1):
+                    tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
+
+            print(f"{title} by {artist} | Downloaded")
+            set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
+
+    except (KeyError,PermissionError, FileExistsError, FileNotFoundError) as exc:
+        print(f'ERR: {title} by {artist}: {exc}\nCant download...')
+
 def album_download(album_id, token):
     albumdir = f'album_{album_id}'
     makedirs(albumdir, exist_ok=True)
-    
+
     headr = {"Authorization": f"Bearer {token}"}
     resp = get(f'https://api.spotify.com/v1/albums/{album_id}', headers=headr).json()
 
@@ -382,44 +382,44 @@ def album_download(album_id, token):
 
     except KeyError:
         pass
-        
+
     artistname = resp['artists'][0]['name']
     albumlink = resp['external_urls']['spotify']
     albumname = resp['name']
     albumrelease = resp['release_date']
     totalsongs = resp['total_tracks']
-        
+
     print(f'Downloading {albumname} by {artistname}, released in {albumrelease} with {totalsongs} total tracks\nLink: {albumlink}\n')
 
     for tracks in resp['tracks']['items']:
         trackid = tracks['id']
 
         track_id = TrackId.from_uri(f"spotify:track:{trackid}")
-            
+
         title = tracks['name']
         artist = tracks['artists'][0]['name']
 
         try:
             stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
-                
+
             print(f"Downloading {title} by {artist} ...")
 
             total_size = stream.input_stream.size
-                
+
             filename = clean_filename(f"{artist}_-_{title}.mp3")
-                
+
             if filename in listdir(albumdir):
                 print(f'Skipping {title} by {artist}, already downloaded\n')
-    
+
             else:
                 with open(f'album_{album_id}/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
                     for _ in range(int(total_size / 5000) + 1):
                         tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
-                            
+
                 print(f"{title} by {artist} | Downloaded")
                 set_metadata(f'album_{album_id}/{filename}', trackid, token, albumdir)
 
-        except Exception as exc:
+        except (KeyError, PermissionError, FileExistsError, FileNotFoundError) as exc:
             print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
 def playlist_download(playlist_id, token):
@@ -428,47 +428,47 @@ def playlist_download(playlist_id, token):
 
     headr = {"Authorization": f"Bearer {token}"}
     playlistdata = get(f'https://api.spotify.com/v1/playlists/{playlist_id}', headers=headr).json()
-        
+
     totals = playlistdata['tracks']['total']
 
     for i in range(0, totals, 100):
         resp = get(f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks?offset={i}&limit=100', headers=headr).json()
-        
+
         for track_data in resp['items']:
             try:
-                trackid = track_data['track']['uri']
-                    
+                trackid = track_data['track']['id']
+
                 track_id = TrackId.from_uri(f"spotify:track:{trackid}")
-                    
+
                 title = track_data['track']['name']
                 artist = track_data['track']['album']['artists'][0]['name']
-    
+
                 try:
                     stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
-                            
+
                     print(f'Downloading {title} by {artist}')
-            
+
                     total_size = stream.input_stream.size
-                            
+
                     filename = clean_filename(f"{artist}_-_{title}.mp3")
-                            
+
                     if filename in listdir(playdir):
                         print(f'{title} by {artist} is already downloaded, skipping\n')
-                                    
+
                     else:
                         with open(f'playlist_{playlist_id}/{filename}', 'wb') as filedl, tqdm(unit='B', unit_scale=True, unit_divisor=1024, total=total_size, bar_format='{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}') as tbar:
                             for _ in range(int(total_size / 5000) + 1):
                                 tbar.update(filedl.write(stream.input_stream.stream().read(50000)))
-                        
+
                         print(f"{title} by {artist} | Downloaded")
                         set_metadata(f'playlist_{playlist_id}/{filename}', trackid, token, playdir)
-    
-                except Exception as exc:
+
+                except (KeyError, PermissionError, FileExistsError, FileNotFoundError) as exc:
                     print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
-                
-            except:
+
+            except (KeyError, PermissionError, FileExistsError, FileNotFoundError):
                 pass
-                
+
 def writedetails():
     print('MAKE SURE YOU ENTER THE CORRECT DETAILS! THE PROGRAM DOES NOT CHECK IF YOUR DETAILS ARE CORRECT, But when downloading a song, it will raise an exception/error if your details are incorrect')
     print('Note: You wont be able to see your password and API token while typing. If you dont have a API Token, run the `gettoken` file\n')
@@ -479,7 +479,7 @@ def writedetails():
 
     makedirs('.data', exist_ok=True)
 
-    with open('.data/account.json', 'w+') as fdata:
+    with open('.data/account.json', 'w+', encoding='utf-8') as fdata:
         fdata.write(dumps({"email": email, "password": str(b64encode(passwd.encode("utf-8")), "utf-8"), "token": token})) #base64 because i have to decrypt
         fdata.flush()
 
@@ -493,7 +493,7 @@ def main():
     clearscr()
 
     ask = input('Type\n - enter to continue\n - e to exit\n - u to update account data\n - ut to update token\n -> ')
-    
+
     if ask == '':
         clearscr()
 
@@ -505,16 +505,16 @@ def main():
             uri = input('Enter song URI (spotify:track: isnt needed, only URI)\n -> ')
 
             track_downloader(uri, TKN)
-                    
+
             input('Type enter to continue')
             clearscr()
             main()
-                    
+
         elif askchoice.lower() == 'ab':
             clearscr()
-                    
+
             alb_id = input('Enter album ID\n -> ')
-                    
+
             album_info(alb_id, TKN)
 
         elif askchoice.lower() == 't':
@@ -525,15 +525,15 @@ def main():
             track_info(tid, TKN)
 
         elif askchoice.lower() == 's':
-             clearscr()
+            clearscr()
 
-             srch = input('I want to search for...\n -> ')
+            srch = input('I want to search for...\n -> ')
 
-             search_track(srch, TKN)
+            search_track(srch, TKN)
 
         elif askchoice.lower() == 'p':
             clearscr()
-                    
+
             playid = input('Enter playlist ID\n -> ')
 
             clearscr()
@@ -546,7 +546,7 @@ def main():
 
             clearscr()
             playlist_download(playid, TKN)
-                    
+
         elif askchoice.lower() == 'abd':
             clearscr()
 
@@ -554,12 +554,12 @@ def main():
 
             clearscr()
             album_download(albid, TKN)
-            
+
         elif askchoice.lower() == 'howid':
-              clearscr()
-              
-              input('To get the ID of a song, album or playlist, first copy the link\n After that, paste it somewhere. It should look lile this:\n  https://open.spotify.com/track/0MxEnGqgMlVZn0lD1k61kR?si=YXgWaWTWQYS9M1PAZvNblg&utm_source=copy-link\n The random characters after "/track/" and before "?si=" is the ID ("0MxEnGqgMlVZn0lD1k61kR"). Copy that, and youre ready to go\nPress enter to continue')
-                    
+            clearscr()
+
+            input('To get the ID of a song, album or playlist, first copy the link\n After that, paste it somewhere. It should look lile this:\n  https://open.spotify.com/track/0MxEnGqgMlVZn0lD1k61kR?si=YXgWaWTWQYS9M1PAZvNblg&utm_source=copy-link\n The random characters after "/track/" and before "?si=" is the ID ("0MxEnGqgMlVZn0lD1k61kR"). Copy that, and youre ready to go\nPress enter to continue')
+
         elif askchoice.lower() != '':
             print('Invalid input')
             sleep(1)
@@ -573,36 +573,36 @@ def main():
     elif ask.lower() == 'u':
         clearscr()
         writedetails()
-        
+
     elif ask.lower() == 'ut':
         clearscr()
         generate_new_token()
-                
+
     elif ask.lower() != 'e' or ask.lower() != '':
         print('Invalid input')
         sleep(1)
         clearscr()
         main()
-            
+
 if __name__ == '__main__':
     clearscr()
-    
+
     try:
-        with open('.data/account.json', 'r') as file:
+        with open('.data/account.json', 'r', encoding='utf-8') as file:
             print('Reading account info...')
-                
+
             data = loads(file.read())
-    
+
             EMAIL = data['email']
             PASSWD = str(b64decode(data['password']), "utf-8")
             TKN = data['token']
-                
+
             print('Logging in...')
-                
+
             session = Session.Builder().user_pass(EMAIL, PASSWD).create()
-    
+
             valid_token(TKN)
-            
+
     except FileNotFoundError:
         print('No account detected. Account email, password and API token are required\n')
 
@@ -616,8 +616,8 @@ if __name__ == '__main__':
         elif asknext.lower() == 'e':
             clearscr()
             exit()
-            
+
         elif asknext.lower() != 'e' or asknext.lower() != '':
             exit('Invalid input')
-            
+
     main()
