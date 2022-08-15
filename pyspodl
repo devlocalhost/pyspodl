@@ -436,7 +436,7 @@ def playlist_download(playlist_id, token):
 
         for track_data in resp['items']:
             try:
-                trackid = track_data['track']['uri']
+                trackid = track_data['track']['id']
 
                 track_id = TrackId.from_uri(f"spotify:track:{trackid}")
 
