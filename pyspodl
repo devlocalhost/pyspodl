@@ -96,7 +96,7 @@ def set_metadata(filename, uri, token, pathfilename):
 
     metadata = {'title': title, 'artist': artist, 'totaltracks': total_tracks, 'album': album_name, 'albumartist': album_artists, 'year': year}
 
-    print(f"Downloading cover... {resp['album']['images'][0]['url']}")
+    print(f"Downloading cover...")
 
     with open(f'{pathfilename}/cover.jpg', 'wb') as cover_img:
         cover_img.write(get(resp['album']['images'][0]['url']).content)
