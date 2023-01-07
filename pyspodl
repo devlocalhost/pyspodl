@@ -16,31 +16,33 @@ from librespot.core import Session
 from librespot.metadata import TrackId
 from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 
-CLEARCMD = None # set to pass to ignore and not clear the terminal
+CLEAR_SCREEN = True # set to False to ignore and not clear the terminal
+CLEAR_COMMAND = None
+
+platform_name = sysname()
+
+if platform_name == 'Windows':
+    CLEAR_COMMAND = 'cls'
+
+elif platform_name == 'Linux' or platform_name == 'Darwin':
+    CLEAR_COMMAND = 'clear'
 
 def clearscr():
-    if CLEARCMD == 'pass':
+    if not CLEAR_SCREEN:
         pass
 
-    elif CLEARCMD is not None:
-        system(CLEARCMD)
+    if CLEAR_COMMAND is not None:
+        system(CLEAR_COMMAND)
 
-    elif CLEARCMD is None:
-        if sysname() == 'Windows':
-            system('cls')
-
-        elif sysname() == 'Linux' or sysname() == 'Darwin':
-            system('clear')
-
-        else:
-            print('Clear command not defined!')
+    elif CLEAR_COMMAND is None:
+        print('\n----------------\n')
 
 def generate_new_token():
     with open('.data/account.json', 'r', encoding='utf-8') as oldata:
         odata = load(oldata)
 
-    client_id = 'client_id'
-    client_secret = 'client_secret'
+    client_id = 'github.com/devlocalhost/sysmon'
+    client_secret = 'github.com/devlocalhost/sysmon'
 
     resp = post('https://accounts.spotify.com/api/token', {'grant_type': 'client_credentials', 'client_id': client_id, 'client_secret': client_secret}).json()
 
@@ -51,11 +53,10 @@ def generate_new_token():
             dump(odata, newdata)
             newdata.flush()
 
-    except (PermissionError, FileNotFoundError) as exc:
+    except PermissionError as exc:
         print(f'There was an error updating the file. Do you have write permissions?\nHeres the token anyway: {resp["access_token"]}. Replace it with the old "token" in .data/account.json\n{exc}')
 
-    input('Token has been succesfully updated\nType enter to continue...')
-    main()
+    exit('Token has been succesfully updated\nRe-run pyspodl')
 
 def valid_token(token):
     print('Checking if token is valid...')
@@ -95,7 +96,7 @@ def set_metadata(filename, uri, token, pathfilename):
 
     metadata = {'title': title, 'artist': artist, 'totaltracks': total_tracks, 'album': album_name, 'albumartist': album_artists, 'year': year}
 
-    print('Downloading cover...')
+    print(f"Downloading cover... {resp['album']['images'][0]['url']}")
 
     with open(f'{pathfilename}/cover.jpg', 'wb') as cover_img:
         cover_img.write(get(resp['album']['images'][0]['url']).content)
@@ -115,7 +116,7 @@ def set_metadata(filename, uri, token, pathfilename):
 
             track_file.save()
 
-    except (FileNotFoundError, PermissionError):
+    except PermissionError:
         pass
 
     try:
@@ -130,14 +131,6 @@ def search_track(term, token):
     headr = {"Authorization": f"Bearer {token}"}
 
     resp = get(f'https://api.spotify.com/v1/search?q={term.replace(" ", "%20")}&type=track', headers=headr).json()
-
-    try:
-        if resp['error']['status'] == 401:
-            print('API Token has expired, generating and updating...')
-            generate_new_token()
-
-    except KeyError:
-        pass
 
     totalresults = len(resp['tracks']['items'])
 
@@ -157,7 +150,7 @@ def search_track(term, token):
             previewurl = details['preview_url']
 
         elif details['preview_url'] is None:
-            previewurl = 'https://youtu.be/dQw4w9WgXcQ'
+            previewurl = 'Not available'
 
         print(f'{trackname} by {artistname}\nURI: {trackuri}\nID: {trackid}\nShort preview: {previewurl}\n--------------------')
 
@@ -173,14 +166,6 @@ def track_info(trackid, token):
 
     resp = get(f'https://api.spotify.com/v1/tracks/{trackid}', headers=headr).json()
 
-    try:
-        if resp['error']['status'] == 401:
-            print('API Token has expired, generating and updating...')
-            generate_new_token()
-
-    except KeyError:
-        pass
-
     if resp['explicit'] is False:
         isexplicit = 'No'
 
@@ -195,7 +180,7 @@ def track_info(trackid, token):
         track_pre = resp['preview_url']
 
     elif resp['preview_url'] is None:
-        track_pre = 'https://youtu.be/dQw4w9WgXcQ'
+        track_pre = 'Not available'
 
     artistname = resp['album']['artists'][0]['name']
     albumurl = resp['album']['external_urls']['spotify']
@@ -214,13 +199,10 @@ def album_info(album_id, token):
     headr = {"Authorization": f"Bearer {token}"}
     info = get(f'https://api.spotify.com/v1/albums/{album_id}/', headers=headr).json()
 
-    try:
-        if info['error']['status'] == 401:
-            print('API Token has expired, generating and updating...')
-            generate_new_token()
-
-    except KeyError:
-        pass
+    if info["error"]:
+        input(f"Error: {info['error']['message']}\nPress enter to continue")
+        clearscr()
+        main()
 
     artistname = info['artists'][0]['name']
     albumlink = info['external_urls']['spotify']
@@ -249,7 +231,7 @@ def album_info(album_id, token):
                 previewurl = tracks['preview_url']
 
             elif tracks['preview_url'] is None:
-                previewurl = 'https://youtu.be/dQw4w9WgXcQ'
+                previewurl = 'Not available'
 
             if tracks['explicit'] is False:
                 isexplicit = 'No'
@@ -270,13 +252,10 @@ def playlist_info(playlist_id, token):
     headr = {"Authorization": f"Bearer {token}"}
     info = get(f'https://api.spotify.com/v1/playlists/{playlist_id}/', headers=headr).json()
 
-    try:
-        if info['error']['status'] == 401:
-            print('API Token has expired, generating and updating...')
-            generate_new_token()
-
-    except KeyError:
-        pass
+    if info["error"]:
+        input(f"Error: {info['error']['message']}\nPress enter to continue")
+        clearscr()
+        main()
 
     des = info['description']
 
@@ -299,27 +278,30 @@ def playlist_info(playlist_id, token):
         final += 100
 
         for tracks in resp['items']:
-            duration = datetime.fromtimestamp(tracks['track']['duration_ms'] / 1000.0).strftime('%M minutes and %S seconds')
-            trackid = tracks['track']['id']
-            trackname = tracks['track']['name']
-            trackartist = tracks['track']['artists'][0]['name']
-            tracklink = tracks['track']['external_urls']['spotify']
+            try:
+                duration = datetime.fromtimestamp(tracks['track']['duration_ms'] / 1000.0).strftime('%M minutes and %S seconds')
+                trackid = tracks['track']['id']
+                trackname = tracks['track']['name']
+                trackartist = tracks['track']['artists'][0]['name']
+                tracklink = tracks['track']['external_urls']['spotify']
 
-            if tracks['track']['preview_url'] is not None:
-                previewurl = tracks['track']['preview_url']
+                if tracks['track']['preview_url'] is not None:
+                    previewurl = tracks['track']['preview_url']
 
-            elif tracks['track']['preview_url'] is None:
-                previewurl = 'https://youtu.be/dQw4w9WgXcQ'
+                elif tracks['track']['preview_url'] is None:
+                    previewurl = 'Not available'
 
-            if tracks['track']['explicit'] is False:
-                isexplicit = 'No'
+                if tracks['track']['explicit'] is False:
+                    isexplicit = 'No'
 
-            if tracks['track']['explicit'] is True:
-                isexplicit = 'Yes'
+                if tracks['track']['explicit'] is True:
+                    isexplicit = 'Yes'
 
-            print(f'{trackname} by {trackartist}\nLink? {tracklink}\nDuration? {duration}\nIs explicit? {isexplicit}\nTrack ID? {trackid}\nPreview link? {previewurl}')
+                print(f'{trackname} by {trackartist}\nLink? {tracklink}\nDuration? {duration}\nIs explicit? {isexplicit}\nTrack ID? {trackid}\nPreview link? {previewurl}')
+                print('--------------------------------')
 
-            print('--------------------------------')
+            except TypeError:
+                pass
 
     input('Type enter to go back...')
     clearscr()
@@ -333,14 +315,6 @@ def track_downloader(uri, token):
     headr = {"Authorization": f"Bearer {token}"}
 
     resp = get(f'https://api.spotify.com/v1/tracks/{uri}', headers=headr).json()
-
-    try:
-        if resp['error']['status'] == 401:
-            print('API Token has expired, generating and updating...')
-            generate_new_token()
-
-    except KeyError:
-        pass
 
     try:
         stream = session.content_feeder().load(track_id, VorbisOnlyAudioQuality(AudioQuality.HIGH), False, None)
@@ -365,8 +339,8 @@ def track_downloader(uri, token):
             print(f"{title} by {artist} | Downloaded")
             set_metadata(f'tracks/{filename}', uri, token, 'tracks/')
 
-    except (KeyError,PermissionError, FileExistsError, FileNotFoundError) as exc:
-        print(f'ERR: {title} by {artist}: {exc}\nCant download...')
+    except (KeyError, PermissionError, FileExistsError, FileNotFoundError) as exc:
+        print(f'ERR: {title} by {artist}: {exc}')
 
 def album_download(album_id, token):
     albumdir = f'album_{album_id}'
@@ -375,13 +349,10 @@ def album_download(album_id, token):
     headr = {"Authorization": f"Bearer {token}"}
     resp = get(f'https://api.spotify.com/v1/albums/{album_id}', headers=headr).json()
 
-    try:
-        if resp['error']['status'] == 401:
-            print('API Token has expired, generating and updating...')
-            generate_new_token()
-
-    except KeyError:
-        pass
+    if resp["error"]:
+        input(f"Error: {resp['error']['message']}\nPress enter to continue")
+        clearscr()
+        main()
 
     artistname = resp['artists'][0]['name']
     albumlink = resp['external_urls']['spotify']
@@ -429,6 +400,11 @@ def playlist_download(playlist_id, token):
     headr = {"Authorization": f"Bearer {token}"}
     playlistdata = get(f'https://api.spotify.com/v1/playlists/{playlist_id}', headers=headr).json()
 
+    if playlistdata["error"]:
+        input(f"Error: {playlistdata['error']['message']}\nPress enter to continue")
+        clearscr()
+        main()
+
     totals = playlistdata['tracks']['total']
 
     for i in range(0, totals, 100):
@@ -450,7 +426,7 @@ def playlist_download(playlist_id, token):
 
                     total_size = stream.input_stream.size
 
-                    filename = clean_filename(f"{artist}_-_{title}.mp3")
+                    filename = clean_filename(f"{artist}_-_{title}.ogg")
 
                     if filename in listdir(playdir):
                         print(f'{title} by {artist} is already downloaded, skipping\n')
@@ -463,10 +439,10 @@ def playlist_download(playlist_id, token):
                         print(f"{title} by {artist} | Downloaded")
                         set_metadata(f'playlist_{playlist_id}/{filename}', trackid, token, playdir)
 
-                except (KeyError, PermissionError, FileExistsError, FileNotFoundError) as exc:
+                except Exception as exc:
                     print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
-            except (KeyError, PermissionError, FileExistsError, FileNotFoundError):
+            except:
                 pass
 
 def writedetails():
@@ -497,7 +473,7 @@ def main():
     if ask == '':
         clearscr()
 
-        askchoice = input('Type\n - dt to download a track\n - t to get track info\n - p to get playlist info\n - pd to download a playlist\n - s to search\n - ab to get album info\n - abd to download a album\n - howid for how to get a tracks, playlist or album ID\n -> ')
+        askchoice = input('Type\n - dt to download a track\n - t to get track info\n - p to get playlist info\n - pd to download a playlist\n - s to search for tracks\n - ab to get album info\n - adl to download a album\n - howid for how to get a tracks, playlist or album ID\n -> ')
 
         if askchoice.lower() == 'dt':
             clearscr()
@@ -547,7 +523,7 @@ def main():
             clearscr()
             playlist_download(playid, TKN)
 
-        elif askchoice.lower() == 'abd':
+        elif askchoice.lower() == 'adl':
             clearscr()
 
             albid = input('Enter album ID\n -> ')
