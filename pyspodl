@@ -343,9 +343,6 @@ def track_downloader(uri, token):
         print(f'ERR: {title} by {artist}: {exc}')
 
 def album_download(album_id, token):
-    albumdir = f'album_{album_id}'
-    makedirs(albumdir, exist_ok=True)
-
     headr = {"Authorization": f"Bearer {token}"}
     resp = get(f'https://api.spotify.com/v1/albums/{album_id}', headers=headr).json()
 
@@ -353,6 +350,8 @@ def album_download(album_id, token):
         input(f"Error: {resp['error']['message']}\nPress enter to continue")
         clearscr()
         main()
+
+    makedirs(f'album_{album_id}', exist_ok=True)
 
     artistname = resp['artists'][0]['name']
     albumlink = resp['external_urls']['spotify']
@@ -394,9 +393,6 @@ def album_download(album_id, token):
             print(f'ERR: {title} by {artist}: {exc}\nSkipping...')
 
 def playlist_download(playlist_id, token):
-    playdir = f'playlist_{playlist_id}'
-    makedirs(playdir, exist_ok=True)
-
     headr = {"Authorization": f"Bearer {token}"}
     playlistdata = get(f'https://api.spotify.com/v1/playlists/{playlist_id}', headers=headr).json()
 
@@ -404,6 +400,8 @@ def playlist_download(playlist_id, token):
         input(f"Error: {playlistdata['error']['message']}\nPress enter to continue")
         clearscr()
         main()
+
+    makedirs(f'playlist_{playlist_id}', exist_ok=True)
 
     totals = playlistdata['tracks']['total']
 
