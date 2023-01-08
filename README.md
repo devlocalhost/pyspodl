@@ -6,10 +6,6 @@ using [librespot-python by kokarare1212](https://github.com/kokarare1212/libresp
 
 <p>click <a href="screenshots.md">here</a></p>
 
-# last updated
-
-Friday, August 12, 2022
-
 # what can you do?
 
 + download songs, playlists and albums (new)
