@@ -11,8 +11,6 @@ well, maybe nothing. pyspodl can only do these: download tracks, albums and play
 # how to use
 + First, you'll need a client ID and secret key. Get them by making a application in [spotify dashboard](https://developer.spotify.com/dashboard/applications)
 + Create an application and copy the client ID and secret
-![creating an application in Spotify dashboard](screens/createapp.png)
-![copying client id and secret](https://i.imgur.com/Qfl2wxd.png)
 + git clone the repo
 + Paste client id and secret on the config file
 + Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
