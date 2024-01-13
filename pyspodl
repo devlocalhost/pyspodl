@@ -103,7 +103,11 @@ def get_token():
     gets the temporary saved token from the config file
     """
 
-    token = get_config_value("account", "token")
+    try:
+        token = get_config_value("account", "token")
+
+    except ConfigError:
+        generate_new_token()
 
     headers = {"Authorization": f"Bearer {token}"}
     resp = requests.get(
