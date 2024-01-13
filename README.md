@@ -15,8 +15,6 @@ well, maybe nothing. pyspodl can only do these: download tracks, albums and play
 ![copying client id and secret](https://i.imgur.com/Qfl2wxd.png)
 + git clone the repo
 + Paste client id and secret on the config file
-![mainpy file lines](screens/mainpyfile.png)
-![gettoken file lines](screens/gettokenfile.png)
 + Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
 + You will also need to install [music-tag](https://pypi.org/project/music-tag/) and [pil (pillow)](https://pypi.org/project/Pillow/): `pip install music-tag Pillow`
 + python3 pyspodl (or on linux chmod +x pyspodl && ./pyspodl)
@@ -25,16 +23,16 @@ well, maybe nothing. pyspodl can only do these: download tracks, albums and play
 Before starting to use pyspodl, you need to fill the config file. Open the config file, and add your accounts email and password (line 2 and 3). After that, set the `download_path`, line 11
 
 ## config entries
-`email`: your accounts email
-`password`: your accounts password
-`token`: used for sending request to the spotify api. you do not need to touch that
-`client_id`: used to get the token
-`client_secret`: used to get the token
-`timeout`: tells the program to wait x seconds before downloading the next song from a playlist or album (to avoid account ban, but i never had anm account banned by using my program)
-`premium_downloads`: download tracks at a higher quality. only for premium accounts
-`download_path`: the path to download the tracks
-`set_metadata`: sets tags to the tracks
-`track_format`: the format the songs will be saved
++ `email`: your accounts email
++ `password`: your accounts password
++ `token`: used for sending request to the spotify api. you do not need to touch that
++ `client_id`: used to get the token
++ `client_secret`: used to get the token
++ `timeout`: tells the program to wait x seconds before downloading the next song from a playlist or album (to avoid account ban, but i never had anm account banned by using my program)
++ `premium_downloads`: download tracks at a higher quality. only for premium accounts
++ `download_path`: the path to download the tracks
++ `set_metadata`: sets tags to the tracks
++ `track_format`: the format the songs will be saved
 
 # helping
 Feel free to fork or make PR's (Pull requests). If you're forking, please leave [this repos link](https://github.com/devlocalhost/pyspodl) on your readme, and [kokarare1212's module repo link](https://github.com/kokarare1212/librespot-python).
