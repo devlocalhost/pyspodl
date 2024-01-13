@@ -307,7 +307,7 @@ class Downloader:
 
         print(f"Downloading {track_title} by {artist}")
 
-        path_filename = os.path.normpath(f"{self.download_path}{os.sep}{filename}")
+        path_filename = f"{self.download_path}/{filename}"
 
         if os.path.exists(path_filename + ".ogg"):
             print("Track exists, skipping")
