@@ -11,11 +11,11 @@ well, maybe nothing. pyspodl can only do these: download tracks, albums and play
 # how to use
 + First, you'll need a client ID and secret key. Get them by making a application in [spotify dashboard](https://developer.spotify.com/dashboard/applications)
 + Create an application and copy the client ID and secret
-+ git clone the repo
-+ Paste client id and secret on the config file
-+ Make sure you have python 3.6+, git, and then `pip3 install git+https://github.com/kokarare1212/librespot-python`
-+ You will also need to install [music-tag](https://pypi.org/project/music-tag/) and [pil (pillow)](https://pypi.org/project/Pillow/): `pip install music-tag Pillow`
-+ python3 pyspodl (or on linux chmod +x pyspodl && ./pyspodl)
++ run this: `git clone https://github.com/devlocalhost/pyspodl`
++ Paste client id and secret on the config file, inside the "pyspodl" directory
++ Make sure you have git, and then execute `pip3 install git+https://github.com/kokarare1212/librespot-python`
++ You will also need Pillow for the album cover tags: `pip3 install Pillow`
++ Now you can use pyspodl like this: `python3 pyspodl` (or on linux `chmod +x pyspodl`, then `./pyspodl`)
 
 # the config file
 Before starting to use pyspodl, you need to fill the config file. Open the config file, and add your accounts email and password (line 2 and 3). After that, set the `download_path`, line 11
