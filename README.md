@@ -25,12 +25,12 @@ Before you start using pyspodl, you need to fill out the config file. Open the c
 + `password`: your accounts password
 + `token`: used to send request to spotify api. you do not need to touch this.
 + `client_id`: used to get the token
-+ client_secret: used to get the token
++ `client_secret`: used to get the token
 + `timeout`: tells the program to wait x seconds before downloading the next song from a playlist or album (to avoid account bans, but I never had an account get banned by using my program).
 + `premium_downloads`: download tracks in higher quality. only for premium accounts.
 + `download_path`: the path to download the tracks
 + `set_metadata`: set tags for the tracks
-+ `track_format`: the format the tracks will be saved in
++ `track_format`: the format the tracks will be saved in. check the config file for possible entries
 
 # help
 Feel free to fork or make PR's (pull requests). If you're forking, please leave [this repos link](https://github.com/devlocalhost/pyspodl) in your readme and [kokarare1212's module repo link](https://github.com/kokarare1212/librespot-python).
