@@ -350,11 +350,9 @@ class Downloader:
 
         if link_type == "track":
             self.download_track(link)
-            sys.exit()
 
-        if link_type in ("album", "playlist"):
+        elif link_type in ("album", "playlist"):
             self.download_playlist_or_album(link)
-            sys.exit()
 
         else:
             sys.exit('[download] Invalid URL. URL must start with "open.spotify.com"')
@@ -368,6 +366,10 @@ if __name__ == "__main__":
 
     else:
         downloader = Downloader()
-        link = sys.argv[1]
 
-        downloader.download(link)
+        links = sys.argv[1:][0].split(" ")
+
+        for link in links:
+            downloader.download(link)
+
+        sys.exit()
