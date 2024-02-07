@@ -94,8 +94,11 @@ def generate_new_token():
                 f"[generate_new_token] Error updating the configuration file: {e}\n\nManually update token from the config.toml file by yourself with: \"{resp['access_token']}\""
             )
 
-    os.execv(sys.argv[0], sys.argv)
-    # sys.exit("Re-run pyspodl")
+    try:
+        os.execv(sys.argv[0], sys.argv)
+
+    except FileNotFoundError:
+        sys.exit("Re-run pyspodl")
 
 
 def get_token():
