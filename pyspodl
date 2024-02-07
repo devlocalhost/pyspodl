@@ -98,7 +98,7 @@ def generate_new_token():
         os.execv(sys.argv[0], sys.argv)
 
     except FileNotFoundError:
-        sys.exit("Re-run pyspodl")
+        sys.exit("Token was updated, run pyspodl again")
 
 
 def get_token():
