@@ -1,9 +1,9 @@
 [account]
-email = ""
-password = ""
-token = ""
-client_id = ""
-client_secret = ""
+email = "" # your accounts email
+password = "" # the password
+token = "" # used to communicate with spotify api
+client_id = "" # used to get the token
+client_secret = "" # same thing as above
 
 [downloading]
 timeout = 2 # in seconds
