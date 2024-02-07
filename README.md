@@ -14,7 +14,7 @@ Well, maybe nothing. pyspodl can only do these things: download tracks, albums a
 + Run this command: `git clone https://github.com/devlocalhost/pyspodl`
 + Paste the client id and secret into the config file, inside the "pyspodl" directory.
 + Make sure you have git, then run `pip3 install git+https://github.com/kokarare1212/librespot-python`.
-+ You will also need Pillow for the album cover & mutagen for tags: `pip3 install Pillow mutagen`.
++ You will also need Pillow for the album cover, mutagen for tags, and toml to read fhe config file: `pip3 install Pillow mutagen toml`.
 + Now you can use pyspodl like this: `python3 pyspodl` (or on linux `chmod +x pyspodl`, then `./pyspodl`)
 
 # the config file
