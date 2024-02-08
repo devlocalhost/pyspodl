@@ -168,6 +168,8 @@ def get_session():
     """
 
     try:
+        print("[get_session] Trying to create a session...")
+
         session = (
             Session.Builder()
             .user_pass(
