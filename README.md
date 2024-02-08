@@ -34,7 +34,20 @@ Before you start using pyspodl, you need to fill out the config file.
 
 ## config example
 ```
-[account] email = "" # your accounts email password = "" # the password token = "" # used to communicate with spotify api client_id = "" # used to get the token client_secret = "" # same thing as above  [downloading] timeout = 2 # in seconds premium_downloads = false # can be false or true download_path = "" # download path for the tracks set_metadata = true # can be false or true track_format = "{artist}/{album}/{title}" # can be: artist, album, title, tracknumber, year # the above format will save a song like this: download_path/Nas/Illmatic/The World Is Yours.ogg #                                                         artist    album              title
+[account]
+email = "" # your accounts email
+password = "" # the password
+token = "" # used to communicate with spotify api
+client_id = "" # used to get the token
+client_secret = "" # same thing as above
+
+[downloading] timeout = 2 # in seconds
+premium_downloads = false # can be false or true
+download_path = "" # download path for the tracks
+set_metadata = true # can be false or true
+track_format = "{artist}/{album}/{title}" # can be: artist, album, title, tracknumber, year
+# the above format will save a song like this: download_path/Nas/Illmatic/The World Is Yours.ogg
+#                                                         artist    album              title
 ```
 
 # help
