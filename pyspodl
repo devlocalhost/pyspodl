@@ -267,7 +267,7 @@ class Downloader:
         try:
             timeout = get_config_value("downloading", "timeout")
 
-            print(f"[download_track] Sleeping for {timeout}...")
+            print(f"[download_track] Sleeping for {timeout} seconds...")
 
             time.sleep(timeout)
 
