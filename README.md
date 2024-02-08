@@ -18,7 +18,7 @@ Well, maybe nothing. pyspodl can only do these things: download tracks, albums a
 + Now you can use pyspodl like this: `python3 pyspodl`
 
 # the config file
-Before you start using pyspodl, you need to fill out the config file. Open the config file and add your account email and password (line 2 and 3). Then set the `download_path`, line 11
+Before you start using pyspodl, you need to fill out the config file.
 
 ## config entries
 + `email`: your account email
@@ -31,6 +31,11 @@ Before you start using pyspodl, you need to fill out the config file. Open the c
 + `download_path`: the path to download the tracks
 + `set_metadata`: set tags for the tracks
 + `track_format`: the format the tracks will be saved in. check the config file for possible entries
+
+## config example
+```
+[account] email = "" # your accounts email password = "" # the password token = "" # used to communicate with spotify api client_id = "" # used to get the token client_secret = "" # same thing as above  [downloading] timeout = 2 # in seconds premium_downloads = false # can be false or true download_path = "" # download path for the tracks set_metadata = true # can be false or true track_format = "{artist}/{album}/{title}" # can be: artist, album, title, tracknumber, year # the above format will save a song like this: download_path/Nas/Illmatic/The World Is Yours.ogg #                                                         artist    album              title
+```
 
 # help
 Feel free to fork or make PR's (pull requests). If you're forking, please leave [this repos link](https://github.com/devlocalhost/pyspodl) in your readme and [kokarare1212's module repo link](https://github.com/kokarare1212/librespot-python).
