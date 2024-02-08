@@ -73,105 +73,105 @@ class Config:
         return value
 
 class Utils:
-def generate_new_token():
-    """
-    tokens are not permament, they expire after an hour,
-    so when invalid, regenerates a new one
-    """
+    def generate_new_token():
+        """
+        tokens are not permament, they expire after an hour,
+        so when invalid, regenerates a new one
+        """
 
-    client_id = get_config_value("account", "client_id")
-    client_secret = get_config_value("account", "client_secret")
+        client_id = get_config_value("account", "client_id")
+        client_secret = get_config_value("account", "client_secret")
 
-    resp = requests.post(
-        "https://accounts.spotify.com/api/token",
-        {
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret,
-        },
-        timeout=10,
-    ).json()
+        resp = requests.post(
+            "https://accounts.spotify.com/api/token",
+            {
+                "grant_type": "client_credentials",
+                "client_id": client_id,
+                "client_secret": client_secret,
+            },
+            timeout=10,
+        ).json()
 
-    config = read_config()
+        config = read_config()
 
-    if config:
-        config["account"]["token"] = resp["access_token"]
+        if config:
+            config["account"]["token"] = resp["access_token"]
+
+            try:
+                with open("config.toml", "w", encoding="utf-8") as f:
+                    toml.dump(config, f)
+
+            except Exception as e:
+                sys.exit(
+                    f"[generate_new_token] Error updating the configuration file: {e}\n\nManually update token from the config.toml file by yourself with: \"{resp['access_token']}\""
+                )
 
         try:
-            with open("config.toml", "w", encoding="utf-8") as f:
-                toml.dump(config, f)
+            os.execv(sys.argv[0], sys.argv)
 
-        except Exception as e:
-            sys.exit(
-                f"[generate_new_token] Error updating the configuration file: {e}\n\nManually update token from the config.toml file by yourself with: \"{resp['access_token']}\""
-            )
-
-    try:
-        os.execv(sys.argv[0], sys.argv)
-
-    except FileNotFoundError:
-        sys.exit("Token was updated, run pyspodl again")
+        except FileNotFoundError:
+            sys.exit("Token was updated, run pyspodl again")
 
 
-def get_token():
-    """
-    gets the temporary saved token from the config file
-    """
+    def get_token():
+        """
+        gets the temporary saved token from the config file
+        """
 
-    try:
-        token = get_config_value("account", "token")
+        try:
+            token = get_config_value("account", "token")
 
-    except ConfigError:
-        generate_new_token()
+        except ConfigError:
+            generate_new_token()
 
-    headers = {"Authorization": f"Bearer {token}"}
-    resp = requests.get(
-        "https://api.spotify.com/v1/search?q=home+resonance&type=track",
-        headers=headers,
-        timeout=10,
-    )
+        headers = {"Authorization": f"Bearer {token}"}
+        resp = requests.get(
+            "https://api.spotify.com/v1/search?q=home+resonance&type=track",
+            headers=headers,
+            timeout=10,
+        )
 
-    if resp.status_code == 401:
-        generate_new_token()
+        if resp.status_code == 401:
+            generate_new_token()
 
-    return token
+        return token
 
 
-def set_metadata(metadata, cover_image, filename):
-    """
-    set metadata to a file (these are ogg tags, not id3!)
-    """
+    def set_metadata(metadata, cover_image, filename):
+        """
+        set metadata to a file (these are ogg tags, not id3!)
+        """
 
-    file = OggVorbis(f"{filename}.ogg")
+        file = OggVorbis(f"{filename}.ogg")
 
-    for key, value in metadata.items():
-        file[key] = str(value)
+        for key, value in metadata.items():
+            file[key] = str(value)
 
-    try:
-        resp = requests.get(cover_image["url"], timeout=10)
-        picture = Picture()
+        try:
+            resp = requests.get(cover_image["url"], timeout=10)
+            picture = Picture()
 
-        picture.data = resp.content
-        picture.type = 17
-        picture.mime = "image/jpeg"
-        picture.width = cover_image["width"]
-        picture.height = cover_image["height"]
+            picture.data = resp.content
+            picture.type = 17
+            picture.mime = "image/jpeg"
+            picture.width = cover_image["width"]
+            picture.height = cover_image["height"]
 
-        picture_data = picture.write()
-        encoded_data = base64.b64encode(picture_data)
-        vcomment_value = encoded_data.decode("ascii")
+            picture_data = picture.write()
+            encoded_data = base64.b64encode(picture_data)
+            vcomment_value = encoded_data.decode("ascii")
 
-        file["metadata_block_picture"] = [vcomment_value]
+            file["metadata_block_picture"] = [vcomment_value]
 
-    except requests.exceptions.RequestException:
-        pass
+        except requests.exceptions.RequestException:
+            pass
 
-    try:
-        file.save()
+        try:
+            file.save()
 
-    except (OggVorbisHeaderError, error):
-        pass  # fuck you
-        # seriously fuck it, idk why it happens
+        except (OggVorbisHeaderError, error):
+            pass  # fuck you
+            # seriously fuck it, idk why it happens
 
 
 def get_session():
