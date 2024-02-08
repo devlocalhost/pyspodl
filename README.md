@@ -18,7 +18,7 @@ Well, maybe nothing. pyspodl can only do these things: download tracks, albums a
 + Now you can use pyspodl like this: `python3 pyspodl`
 
 ## examples
-`python pyspodl -l LINK
+`python pyspodl -l LINK`
 `python pyspodl -l "LINK1 LINK2 LINK3"`
 `python pyspodl -l ... -c /path/to/config.file`
 
