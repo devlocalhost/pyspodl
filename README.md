@@ -17,6 +17,13 @@ Well, maybe nothing. pyspodl can only do these things: download tracks, albums a
 + You will also need Pillow for the album cover, mutagen for tags, and toml to read fhe config file: `pip3 install Pillow mutagen toml`.
 + Now you can use pyspodl like this: `python3 pyspodl`
 
+## examples
+`python pyspodl -l LINK
+`python pyspodl -l "LINK1 LINK2 LINK3"`
+`python pyspodl -l ... -c /path/to/config.file`
+
+Or, check `python -h`
+
 # the config file
 Before you start using pyspodl, you need to fill out the config file.
 
