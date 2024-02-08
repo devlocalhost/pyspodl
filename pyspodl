@@ -23,6 +23,8 @@ from librespot.core import Session
 from librespot.metadata import TrackId
 from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 
+from arguments import get_arguments
+
 
 class ConfigError(Exception):
     """
@@ -30,37 +32,47 @@ class ConfigError(Exception):
     """
 
 
-def read_config():
+class Config:
     """
-    read the config file and return the data
-    """
-
-    config_path = os.path.normpath("config.toml")
-
-    try:
-        with open(config_path, encoding="utf-8") as config_file:
-            return toml.load(config_file)
-
-    except FileNotFoundError:
-        sys.exit(f'[read_config] Config file "{config_path}" not found.')
-
-
-def get_config_value(section, key):
-    """
-    get value from config file
+    config related functions
     """
 
-    config = read_config()
-    value = config.get(section).get(key)
+    def __init__(self, config_path=None):
+        self.config_file = os.path.abspath(config_path) if config_path else os.path.abspath("config.toml")
 
-    if value is None or (isinstance(value, str) and not value.strip()):
-        raise ConfigError(
-            f"[get_config_value] Value for '{key}' in section '{section}' is missing or blank."
-        )
-
-    return value
+    def __str__(self):
+        return f"[Config] Using file {self.config_file}"
 
 
+    def read_config(self):
+        """
+        read the config file and return the data
+        """
+
+        try:
+            with open(self.config_file, encoding="utf-8") as config_file:
+                return toml.load(config_file)
+
+        except FileNotFoundError:
+            sys.exit(f'[read_config] Config file "{config_path}" not found.')
+
+
+    def get_config_value(self, section, key):
+        """
+        get value from config file
+        """
+
+        config = self.read_config()
+        value = config.get(section).get(key)
+
+        if value is None or (isinstance(value, str) and not value.strip()):
+            raise ConfigError(
+                f"[get_config_value] Value for '{key}' in section '{section}' is missing or blank."
+            )
+
+        return value
+
+class Utils:
 def generate_new_token():
     """
     tokens are not permament, they expire after an hour,
@@ -200,16 +212,19 @@ class Downloader:
     where the magic happens.
     """
 
-    def __init__(self):
+    def __init__(self, config):
         """
         define some values i guess...?
         """
 
         self.session = get_session()
 
-        self.premium_downloads = get_config_value("downloading", "premium_downloads")
-        self.download_path = get_config_value("downloading", "download_path")
-        self.set_metadata = get_config_value("downloading", "set_metadata")
+        self.premium_downloads = config.get_config_value("downloading", "premium_downloads")
+        self.download_path = config.get_config_value("downloading", "download_path")
+        self.set_metadata = config.get_config_value("downloading", "set_metadata")
+
+    def __str__(self):
+        return f"Premium? {self.premium_downloads}, Download path? {self.download_path}, Metadata? {self.set_metadata}"
 
     def get_track_urls(self, link):
         """
@@ -367,17 +382,8 @@ class Downloader:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        sys.exit(
-            "pyspodl - a spotify downloader using librespot\n   Usage: pyspodl LINK\n Example: pyspodl https://open.spotify.com/album/2nLOHgzXzwFEpl62zAgCEC?si=hHoYDm8dS-KVd6ZlCNvYoA&context=spotify%3Aalbum%3A2nLOHgzXzwFEpl62zAgCEC"
-        )
+    arguments = get_arguments()
+    config = Config()
+    downloader = Downloader(config)
 
-    else:
-        downloader = Downloader()
-
-        links = sys.argv[1:][0].split(" ")
-
-        for link in links:
-            downloader.download(link)
-
-        sys.exit()
+    sys.exit([arguments, config.__str__(), downloader.__str__()])
