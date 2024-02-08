@@ -251,8 +251,7 @@ class Downloader:
 
     def download_playlist_or_album(self, link):
         """
-        download songs off an album or playlist, with timeout
-        to avoid account ban...?
+        download songs off an album or playlist
         """
 
         tracks = self.get_track_urls(link)
@@ -260,18 +259,22 @@ class Downloader:
         for track in tracks:
             self.download_track(track)  # sends id
 
-            try:
-                time.sleep(get_config_value("downloading", "timeout"))
-
-            except TypeError:
-                sys.exit(
-                    '[download_playlist_or_album] "timeout" from config file must be a number (without quotes).'
-                )
-
     def download_track(self, url):
         """
         download an track
         """
+
+        try:
+            timeout = get_config_value("downloading", "timeout")
+
+            print(f"[download_track] Sleeping for {timeout}...")
+
+            time.sleep(timeout)
+
+        except TypeError:
+            sys.exit(
+                '[download_playlist_or_album] "timeout" from config file must be a number (without quotes).'
+            )
 
         track_id = TrackId.from_uri(f"spotify:track:{get_id_type_from_url(url)[0]}")
         headers = {"Authorization": f"Bearer {get_token()}"}
