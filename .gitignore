@@ -1,2 +1,4 @@
 credentials.json
 config.toml
+__pycache__
+__pycache__/*
