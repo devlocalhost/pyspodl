@@ -41,7 +41,8 @@ token = "" # used to communicate with spotify api
 client_id = "" # used to get the token
 client_secret = "" # same thing as above
 
-[downloading] timeout = 2 # in seconds
+[downloading]
+timeout = 2 # in seconds
 premium_downloads = false # can be false or true
 download_path = "" # download path for the tracks
 set_metadata = true # can be false or true
