@@ -9,7 +9,9 @@ I may not work on pyspodl anymore. I dont want to work on this program anymore, 
 Well, maybe nothing. pyspodl can only do these things: download tracks, albums and playlists in "high" (non-premium) and "very high" (premium account required) quality. It downloads them from Spotify, it does not use another source like some other programs do.
 
 # how to use
-+ First, you'll need a client ID and a secret key. Get them by creating an application in the [spotify dashboard](https://developer.spotify.com/dashboard/applications)
+Make sure you have a linux PC/environment, then
+
++ Create a client ID and a secret key from [spotify dashboard](https://developer.spotify.com/dashboard/applications)
 + Create an application and copy the client ID and secret
 + Run this command: `git clone https://github.com/devlocalhost/pyspodl`
 + Paste the client id and secret into the config file, inside the "pyspodl" directory.
