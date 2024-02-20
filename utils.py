@@ -12,6 +12,8 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.oggvorbis import OggVorbisHeaderError
 from mutagen.ogg import error
 
+from config import ConfigError
+
 
 class Utils:
     def __init__(self, config):

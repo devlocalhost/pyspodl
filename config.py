@@ -35,7 +35,7 @@ class Config:
                 return toml.load(config_file)
 
         except FileNotFoundError:
-            sys.exit(f'[read_config] Config file "{config_path}" not found.')
+            sys.exit(f'[read_config] Config file "{self.config_file}" not found.')
 
     def get_config_value(self, section, key):
         """
