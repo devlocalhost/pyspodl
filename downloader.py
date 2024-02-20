@@ -46,7 +46,7 @@ class Downloader:
         track_urls = []
         offset = 0
         limit = 100
-        id_from_url = get_id_type_from_url(link)
+        id_from_url = self.utils.get_id_type_from_url(link)
 
         url = (
             f"https://api.spotify.com/v1/{id_from_url[1] + 's'}/{id_from_url[0]}/tracks"
