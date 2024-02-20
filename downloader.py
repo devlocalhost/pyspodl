@@ -96,9 +96,9 @@ class Downloader:
         try:
             timeout = self.config.get_config_value("downloading", "timeout")
 
-            print(f"[download_track] Sleeping for {timeout} seconds...")
-
-            time.sleep(timeout)
+            if timeout > 0:
+                print(f"[download_track] Sleeping for {timeout} seconds...")
+                time.sleep(timeout)
 
         except TypeError:
             sys.exit(
