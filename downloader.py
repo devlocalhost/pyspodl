@@ -119,7 +119,7 @@ class Downloader:
         artist = resp["artists"][0]["name"]  # artist
         track_title = resp["name"]  # title
         album_name = resp["album"]["name"]  # album
-        album_release = resp["album"]["release_date"].split("-")[0]  # date
+        album_release = resp["album"]["release_date"]  # date
         track_number = resp["track_number"]  # tracknumber
         cover_image = resp["album"]["images"][0]  # coverart, width, height
 
