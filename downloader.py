@@ -63,12 +63,16 @@ class Downloader:
                 if not items:
                     break
 
-                track_urls.extend(
-                    # item["track"]["id"]
-                    item["track"]["external_urls"]["spotify"]
-                    for item in items
-                    if "track" in item and item["track"]
-                )
+                try:
+                    track_urls.extend(
+                        # item["track"]["id"]
+                        item["track"]["external_urls"]["spotify"]
+                        for item in items
+                        if "track" in item and item["track"]
+                    )
+
+                except KeyError:
+                    pass
 
                 offset += limit
 
