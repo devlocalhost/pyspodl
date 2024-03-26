@@ -9,14 +9,14 @@ I may not work on pyspodl anymore. I dont want to work on this program anymore, 
 Well, maybe nothing. pyspodl can only do these things: download tracks, albums and playlists in "high" (non-premium) and "very high" (premium account required) quality. It downloads them from Spotify, it does not use another source like some other programs do.
 
 # how to use
-Make sure you have a linux PC/environment, then
+Requirements: python3, git. Make sure you have those and a linux PC/environment, then
 
 + Create a client ID and a secret key from [spotify dashboard](https://developer.spotify.com/dashboard/applications)
 + Create an application and copy the client ID and secret
 + Run this command: `git clone https://github.com/devlocalhost/pyspodl`
 + Paste the client id and secret into the config file, inside the "pyspodl" directory.
-+ Make sure you have git, then run `pip3 install git+https://github.com/kokarare1212/librespot-python`.
-+ You will also need Pillow for the album cover, mutagen for tags, and toml to read fhe config file: `pip3 install Pillow mutagen toml`.
++ Run `pip3 install git+https://github.com/kokarare1212/librespot-python`.
++ You will also need Pillow for the album cover, mutagen for tags, and toml to read the config file: `pip3 install Pillow mutagen toml`.
 + Now you can use pyspodl like this: `python3 pyspodl`
 
 ## examples
@@ -27,6 +27,9 @@ Make sure you have a linux PC/environment, then
 `python pyspodl -l ... -c /path/to/config.file`
 
 Or, check `python -h`
+
+## updating pyspodl
+When there's a new update, you can simply run `git pull` in the directory where you cloned pyspodl.
 
 # the config file
 Before you start using pyspodl, you need to fill out the config file.
