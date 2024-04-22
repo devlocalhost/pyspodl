@@ -11,8 +11,8 @@ Well, maybe nothing. pyspodl can only do these things: download tracks, albums a
 # how to use
 Requirements: python3, git. Make sure you have those and a linux PC/environment, then
 
-+ Create a client ID and a secret key from [spotify dashboard](https://developer.spotify.com/dashboard/applications)
-+ Create an application and copy the client ID and secret
++ Create an application from [spotify dashboard](https://developer.spotify.com/dashboard/applications), and copy the client ID and secret
++ 
 + Run this command: `git clone https://github.com/devlocalhost/pyspodl`
 + Paste the client id and secret into the config file, inside the "pyspodl" directory.
 + Run `pip3 install git+https://github.com/kokarare1212/librespot-python`.
