@@ -87,11 +87,20 @@ class Downloader:
         tracks = self.get_track_urls(link)
         total_tracks = len(tracks)
 
+        """
+        well, i just noticed that this isnt a really good implementation, because what if a track 
+        fails to download, or is skipped? its going to count it as a "successful download". how do
+        we fix that? i am not sure, and i dont really care about it. maybe changing the message to 
+        something else wouldve been better? for example, "Trying to download track X/Y". but, the 
+        message is a bit too long...
+        """
+
         for count, track in enumerate(tracks):
             self.download_track(track)  # sends id
             print(
                 f"[download_playlist_or_album] Progress: Downloaded {count + 1}/{total_tracks}"
             )
+            
 
     def download_track(self, url):
         """
