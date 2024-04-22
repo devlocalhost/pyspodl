@@ -22,9 +22,6 @@ class Config:
             else os.path.abspath("config.toml")
         )
 
-    def __str__(self):
-        return f"[Config] Using file {self.config_file}"
-
     def read_config(self):
         """
         read the config file and return the data

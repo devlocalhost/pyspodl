@@ -56,7 +56,7 @@ class Utils:
             os.execv(sys.argv[0], sys.argv)
 
         except FileNotFoundError:
-            sys.exit("Token was updated, run pyspodl again")
+            sys.exit("[generate_new_token] Token was updated, run pyspodl again")
 
     def get_token(self):
         """

@@ -35,9 +35,6 @@ class Downloader:
         )
         self.set_metadata = self.config.get_config_value("downloading", "set_metadata")
 
-    def __str__(self):
-        return f"Premium? {self.premium_downloads}, Download path? {self.download_path}, Metadata? {self.set_metadata}"
-
     def get_track_urls(self, link):
         """
         get all tracks available in a playlist or album (spotify gives max 50 entries)
@@ -106,7 +103,7 @@ class Downloader:
 
         except TypeError:
             sys.exit(
-                '[download_playlist_or_album] "timeout" from config file must be a number (without quotes).'
+                '[download_track] "timeout" from config file must be a number (without quotes).'
             )
 
         track_id = TrackId.from_uri(
@@ -146,12 +143,12 @@ class Downloader:
             year=album_release,
         )
 
-        print(f"Downloading {track_title} by {artist}")
+        print(f"[download_track] Downloading {track_title} by {artist}")
 
         path_filename = f"{self.download_path}/{filename}"
 
         if os.path.exists(path_filename + ".ogg"):
-            print("Track exists, skipping")
+            print("[download_track] Track exists, skipping")
 
         else:
             directory_path = os.path.dirname(path_filename)
