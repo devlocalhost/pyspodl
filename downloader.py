@@ -88,9 +88,9 @@ class Downloader:
         total_tracks = len(tracks)
 
         for count, track in enumerate(tracks):
-            print(f"[download_playlist_or_album] Progress: {count + 1}/{total_tracks}")
-
             self.download_track(track)
+
+            print(f"[download_playlist_or_album] Progress: {count + 1}/{total_tracks}")
 
     def download_track(self, url):
         """
