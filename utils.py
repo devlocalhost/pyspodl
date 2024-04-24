@@ -40,12 +40,15 @@ class Utils:
 
         config = self.config.read_config()
 
+        print("[generate_new_token] Trying to update token...")
+
         if config:
             config["account"]["token"] = resp["access_token"]
 
             try:
                 with open("config.toml", "w", encoding="utf-8") as f:
                     toml.dump(config, f)
+                    print("[generate_new_token] Token was updated")
 
             except Exception as e:
                 sys.exit(
