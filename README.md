@@ -2,17 +2,23 @@
 
 using the module [librespot-python by kokarare1212](https://github.com/kokarare1212/librespot-python)
 
-# important
-I may not work on pyspodl anymore. I dont want to work on this program anymore, im just tired of it. So please do not expect any new features. I will of course update the program if a bug or problem is found, I just will not add any features. [Feel free to fork and add your own features](#helping)
-
 # What is different from other downloaders?
 Well, maybe nothing. pyspodl can only do these things: download tracks, albums and playlists in "high" (non-premium) and "very high" (premium account required) quality. It downloads them from Spotify, it does not use another source like some other programs do.
 
 # how to use
 Requirements: python3, git. Make sure you have those and a linux PC/environment, then
 
++ Generate a `credentials.json` file using [librespot-auth](https://github.com/dspearson/librespot-auth)
+    + After compiling (or grabbing the prebuilt binaries), run `librespot-auth` like this: `librespot-auth --name "pyspodl" --class tv`. Then, copy the generated `credentials.json` file to the path where you will run the git clone command.
+    + Open the `credentials.json` file, and do the following:
+        1. Replace `"auth_data"` with `"credentials"`.
+        2. Remove `"auth_type": 1,`
+        3. Enter this before the closing `}`: `"type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS"`.
+        4. Confirm your file looks similar to this:
+```json
+{"username": "BLABLA", "credentials": "BLABLABLA", "type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS"}
+```
 + Create an application from [spotify dashboard](https://developer.spotify.com/dashboard/applications), and copy the client ID and secret
-+ 
 + Run this command: `git clone https://github.com/devlocalhost/pyspodl`
 + Paste the client id and secret into the config file, inside the "pyspodl" directory.
 + Run `pip3 install git+https://github.com/kokarare1212/librespot-python`.
@@ -35,8 +41,7 @@ When there's a new update, you can simply run `git pull` in the directory where 
 Before you start using pyspodl, you need to fill out the config file.
 
 ## config entries
-+ `email`: your account email
-+ `password`: your accounts password
++ `credentials_config_file`: the full path to credentials.json file
 + `token`: used to send request to spotify api. you do not need to touch this.
 + `client_id`: used to get the token
 + `client_secret`: used to get the token
@@ -49,8 +54,7 @@ Before you start using pyspodl, you need to fill out the config file.
 ## config example
 ```
 [account]
-email = "" # your accounts email
-password = "" # the password
+credentials_file_path = "" # full path to the credentials.json file
 token = "" # used to communicate with spotify api
 client_id = "" # used to get the token
 client_secret = "" # same thing as above

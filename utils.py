@@ -128,14 +128,7 @@ class Utils:
         try:
             print("[get_session] Trying to create a session...")
 
-            session = (
-                Session.Builder()
-                .user_pass(
-                    self.config.get_config_value("account", "email"),
-                    self.config.get_config_value("account", "password"),
-                )
-                .create()
-            )
+            session = Session.Builder().stored_file(self.config.get_config_value("account", "credentials_file_path")).create()
 
             return session
 
