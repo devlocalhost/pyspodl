@@ -5,27 +5,27 @@ using the module [librespot-python by kokarare1212](https://github.com/kokarare1
 # What is different from other downloaders?
 Well, maybe nothing. pyspodl can only do these things: download tracks, albums and playlists in "high" (non-premium) and "very high" (premium account required) quality. It downloads them from Spotify, it does not use another source like some other programs do.
 
-# how to use
-Requirements: python3, git. Make sure you have those and a linux PC/environment, then
+# installation
+Make sure you have python3 and git installed. If you don't, go ahead and install them.
 
++ Clone the repository: `git clone https://github.com/devlocalhost/pyspodl`
++ Install the primary dependecy: `pip3 install git+https://github.com/kokarare1212/librespot-python`.
++ Now install the extra dependecies (which are needed, yes): `pip3 install requests Pillow mutagen toml tqdm`.
 + Generate a `credentials.json` file using [librespot-auth](https://github.com/dspearson/librespot-auth)
-    + After compiling (or grabbing the prebuilt binaries), run `librespot-auth` like this: `librespot-auth --name "pyspodl" --class tv`. Then, copy the generated `credentials.json` file to the path where you will run the git clone command.
+    + After compiling (or grabbing the prebuilt binaries), run `librespot-auth` like this: `librespot-auth --name "pyspodl" --class tv`. Launch spotify **desktop app**, click the button that allows you to play on a different device, and you should see "pyspodl". CLick it, then copy the generated `credentials.json` file to pyspodl directory
     + Open the `credentials.json` file, and do the following:
-        1. Replace `"auth_data"` with `"credentials"`.
+        1. Replace `"auth_data"` with `"credentials"`
         2. Remove `"auth_type": 1,`
-        3. Enter this before the closing `}`: `"type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS"`.
+        3. Enter this before the closing `}`: `"type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS"`
         4. Confirm your file looks similar to this:
 ```json
 {"username": "BLABLA", "credentials": "BLABLABLA", "type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS"}
 ```
 + Create an application from [spotify dashboard](https://developer.spotify.com/dashboard/applications), and copy the client ID and secret
-+ Run this command: `git clone https://github.com/devlocalhost/pyspodl`
-+ Paste the client id and secret into the config file, inside the "pyspodl" directory.
-+ Run `pip3 install git+https://github.com/kokarare1212/librespot-python`.
-+ You will also need Pillow for the album cover, mutagen for tags, and toml to read the config file: `pip3 install Pillow mutagen toml`.
++ Paste the client ID and secret into the config file, inside the "pyspodl" directory.
 + Now you can use pyspodl like this: `python3 pyspodl`
 
-## examples
+## usage - examples
 `python pyspodl -l LINK`
 
 `python pyspodl -l "LINK1 LINK2 LINK3"`
