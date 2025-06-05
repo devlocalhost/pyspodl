@@ -8,9 +8,6 @@ import requests
 from librespot.metadata import TrackId
 from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 
-from config import Config
-from utils import Utils
-
 
 class Downloader:
     """
@@ -41,8 +38,6 @@ class Downloader:
         """
 
         track_urls = []
-        offset = 0
-        limit = 100
         id_from_url = self.utils.get_id_type_from_url(link)
 
         url = (
@@ -52,26 +47,30 @@ class Downloader:
         while True:
             try:
                 headers = {"Authorization": f"Bearer {self.utils.get_token()}"}
-                params = {"offset": offset, "limit": limit}
+                params = {"offset": 0, "limit": 50}
 
                 response = requests.get(url, headers=headers, params=params, timeout=10)
-                items = response.json().get("items", [])
+                response_json = response.json()
 
-                if not items:
+                items = response_json["items"]
+                url_next = response_json["next"]
+
+                if url_next:
+                    url = url_next
+
+                for item in items:
+                    try:
+                        track_urls.append(
+                            item["external_urls"]["spotify"]
+                            if id_from_url[1] == "album"
+                            else item["track"]["external_urls"]["spotify"]
+                        )
+
+                    except Exception as e:
+                        print(f"[get_track_urls] Error making request: {e}")
+
+                if len(track_urls) == response_json["total"]:
                     break
-
-                try:
-                    track_urls.extend(
-                        # item["track"]["id"]
-                        item["track"]["external_urls"]["spotify"]
-                        for item in items
-                        if "track" in item and item["track"]
-                    )
-
-                except KeyError:
-                    pass
-
-                offset += limit
 
             except requests.exceptions.RequestException as e:
                 print(f"[get_track_urls] Error making request: {e}")
@@ -90,11 +89,13 @@ class Downloader:
         for count, track in enumerate(tracks):
             self.download_track(track)
 
-            print(f"[download_playlist_or_album] Progress: {count + 1}/{total_tracks}")
+            print(
+                f"[download_playlist_or_album] Progress: {count + 1}/{total_tracks}\n"
+            )
 
     def download_track(self, url):
         """
-        download an track
+        download a track
         """
 
         try:
@@ -159,13 +160,16 @@ class Downloader:
             if directory_path and not os.path.exists(directory_path):
                 os.makedirs(directory_path)
 
-            with open(f"{path_filename}.ogg", "wb+") as track_file, tqdm.tqdm(
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1024,
-                total=stream.input_stream.size,
-                bar_format="{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}",
-            ) as progress_bar:
+            with (
+                open(f"{path_filename}.ogg", "wb+") as track_file,
+                tqdm.tqdm(
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                    total=stream.input_stream.size,
+                    bar_format="{percentage:3.0f}%|{bar:16}|{n_fmt} / {total_fmt} | {rate_fmt}, ETA {remaining}",
+                ) as progress_bar,
+            ):
                 for _ in range(int(stream.input_stream.size / 5000) + 1):
                     progress_bar.update(
                         track_file.write(stream.input_stream.stream().read(50000))

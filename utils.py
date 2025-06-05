@@ -52,7 +52,7 @@ class Utils:
 
             except Exception as e:
                 sys.exit(
-                    f"[generate_new_token] Error updating the configuration file: {e}\n\nManually update token from the config.toml file by yourself with: \"{resp['access_token']}\""
+                    f'[generate_new_token] Error updating the configuration file: {e}\n\nManually update token from the config.toml file by yourself with: "{resp["access_token"]}"'
                 )
 
         try:
@@ -128,7 +128,13 @@ class Utils:
         try:
             print("[get_session] Trying to create a session...")
 
-            session = Session.Builder().stored_file(self.config.get_config_value("account", "credentials_file_path")).create()
+            session = (
+                Session.Builder()
+                .stored_file(
+                    self.config.get_config_value("account", "credentials_file_path")
+                )
+                .create()
+            )
 
             return session
 
