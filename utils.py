@@ -46,7 +46,7 @@ class Utils:
             config["account"]["token"] = resp["access_token"]
 
             try:
-                with open("config.toml", "w", encoding="utf-8") as f:
+                with open(self.config.config_file, "w", encoding="utf-8") as f:
                     toml.dump(config, f)
                     print("[generate_new_token] Token was updated")
 
@@ -119,6 +119,25 @@ class Utils:
         except (OggVorbisHeaderError, error):
             pass  # fuck you
             # seriously fuck it, idk why it happens
+
+    def clear_token(self):
+        """
+        Clears the access token from the config file upon exit.
+        """
+        print("\n[clear_token] Clearing access token from config file...")
+        try:
+            config_data = self.config.read_config()
+            if config_data and "token" in config_data.get("account", {}):
+                config_data["account"]["token"] = ""
+                with open(self.config.config_file, "w", encoding="utf-8") as f:
+                    toml.dump(config_data, f)
+                print("[clear_token] Token cleared successfully.")
+            else:
+                print("[clear_token] Token not found in config, nothing to clear.")
+        except (ConfigError, FileNotFoundError) as e:
+            print(f"[clear_token] Could not read or find config file: {e}", file=sys.stderr)
+        except Exception as e:
+            print(f"[clear_token] An unexpected error occurred while clearing token: {e}", file=sys.stderr)
 
     def get_session(self):
         """
