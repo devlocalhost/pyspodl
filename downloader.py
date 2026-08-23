@@ -121,11 +121,13 @@ class Downloader:
             timeout=10,
         ).json()
 
-        artist = resp["artists"][0]["name"]  # artist
+        album_artist = resp["artists"][0]["name"]  # albumartist
+        artists = [a["name"] for a in resp["artists"]]  # artist
         track_title = resp["name"]  # title
         album_name = resp["album"]["name"]  # album
         album_release = resp["album"]["release_date"]  # date
         track_number = resp["track_number"]  # tracknumber
+        disc_number = resp["disc_number"]  # discnumber
         cover_image = resp["album"]["images"][0]  # coverart, width, height
 
         if self.premium_downloads:
@@ -140,14 +142,14 @@ class Downloader:
 
         filename_format = self.config.get_config_value("downloading", "track_format")
         filename = filename_format.format(
-            artist=artist,
+            artist=album_artist,
             title=track_title,
             album=album_name,
             tracknumber=track_number,
             year=album_release,
         )
 
-        print(f"[download_track] Downloading {track_title} by {artist}")
+        print(f"[download_track] Downloading {track_title} by {album_artist}")
 
         path_filename = f"{self.download_path}/{filename}"
 
@@ -177,11 +179,13 @@ class Downloader:
 
             if self.set_metadata:
                 tags = {
-                    "artist": artist,
+                    "artist": artists,
+                    "albumartist": album_artist,
                     "title": track_title,
                     "album": album_name,
                     "date": album_release,  # .split("-")[0],
                     "tracknumber": track_number,
+                    "discnumber": disc_number,
                 }
 
                 self.utils.set_metadata(tags, cover_image, path_filename)
