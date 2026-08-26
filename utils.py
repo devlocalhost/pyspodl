@@ -92,7 +92,10 @@ class Utils:
         file = OggVorbis(f"{filename}.ogg")
 
         for key, value in metadata.items():
-            file[key] = str(value)
+            if isinstance(value, list):
+                file[key] = [str(v) for v in value]
+            else:
+                file[key] = str(value)
 
         try:
             resp = requests.get(cover_image["url"], timeout=10)
