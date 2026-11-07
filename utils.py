@@ -79,6 +79,9 @@ class Utils:
         file = OggVorbis(path)
 
         for key, value in metadata.items():
+            if value is None:
+                continue
+
             if isinstance(value, list):
                 file[key] = [str(v) for v in value]
             else:

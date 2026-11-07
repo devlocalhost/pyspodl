@@ -171,8 +171,8 @@ timeout = 2                    # mean seconds to wait before each *new* download
 premium_downloads = false      # default quality: true = "very high" (premium only)
 download_path = "./Downloads"  # where tracks are saved
 set_metadata = true            # write tags and cover art
-track_format = "{artist}/{album}/{title}" # artist, album, title, tracknumber, year
-# the format above saves a song as: download_path/Nas/Illmatic/The World Is Yours.ogg
+track_format = "{artist}/{album}/{tracknumber:02d} - {title}" # artist, album, title, tracknumber, year
+# the format above saves a song as: download_path/Nas/Illmatic/03 - The World Is Yours.ogg
 ```
 
 Accounts are not configured here but in the `credentials/` directory, see
@@ -186,8 +186,8 @@ Accounts are not configured here but in the `credentials/` directory, see
 | `timeout` | Default for accounts without their own `timeout`: mean seconds an account waits before each new download (every wait is randomly 20% shorter or longer, e.g. `30` waits 24 to 36 seconds), to be gentle with your account (no bans reported so far). Skipped tracks never wait, and every account waits independently. Must be a number without quotes. |
 | `premium_downloads` | Default for accounts without their own value: `true` for "very high" quality (premium only), otherwise "high". |
 | `download_path` | Base directory for downloads. |
-| `set_metadata` | Write artist, album, title, date, track/disc number and cover art as Ogg tags. |
-| `track_format` | Path template below `download_path`; `.ogg` is appended. Available fields: `{artist}`, `{album}`, `{title}`, `{tracknumber}`, `{year}`. |
+| `set_metadata` | Write artist, album, title, date, track number and total, disc number and cover art as Ogg tags. |
+| `track_format` | Path template below `download_path`; `.ogg` is appended. Available fields: `{artist}`, `{album}`, `{title}`, `{tracknumber}`, `{year}`. Use `{tracknumber:02d}` for a zero-padded number so files sort in album order. |
 
 ## Updating
 Run `git pull` in the directory where you cloned pyspodl. New dependencies are installed on the next run.

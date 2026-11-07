@@ -386,6 +386,7 @@ class Downloader:
                     "album": album_name,
                     "date": album_release,  # .split("-")[0],
                     "tracknumber": track_number,
+                    "tracktotal": resp["album"].get("total_tracks"),
                     "discnumber": disc_number,
                 }
 

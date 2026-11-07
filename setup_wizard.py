@@ -423,7 +423,7 @@ def setup(config_path=None):
     set_metadata = ask_yes_no("Write tags and cover art to the files?", True)
     track_format = ask(
         "Track path format (artist, album, title, tracknumber, year)",
-        "{artist}/{album}/{title}",
+        "{artist}/{album}/{tracknumber:02d} - {title}",
     )
 
     # --- step 3: accounts ---------------------------------------------------
