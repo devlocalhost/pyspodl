@@ -53,13 +53,15 @@ class Config:
     def get_accounts(self):
         """
         return the list of accounts to download with. every account has:
-        name, credentials_file_path, timeout, premium_downloads.
+        name, credentials_file_path, timeout, premium_downloads,
+        long_wait_chance, long_wait.
 
         accounts are the *.json files in the credentials directory (default:
         "credentials" next to the config file, or [account] credentials_dir).
         besides the login data written by the setup, such a file may contain
         its own settings, which override the [downloading] defaults:
-            "name", "timeout", "premium_downloads", "enabled" (false = skip it)
+            "name", "timeout", "premium_downloads", "long_wait_chance",
+            "long_wait", "enabled" (false = skip it)
         accounts of older configs ([[accounts]] tables or a single
         [account] credentials_file_path) are still used.
         """
@@ -121,11 +123,12 @@ class Config:
 
             username = settings.get("username")
 
-            if username in usernames:
+            if username is not None and username in usernames:
                 print(f"[get_accounts] {path}: account {username} is configured twice, ignoring this one.")
                 continue
 
-            usernames.add(username)
+            if username is not None:
+                usernames.add(username)
 
             timeout = settings.get("timeout", defaults.get("timeout", 0))
 
@@ -134,9 +137,30 @@ class Config:
                     f'[get_accounts] "timeout" in {path} must be a number (without quotes).'
                 )
 
+            long_wait_chance = settings.get(
+                "long_wait_chance", defaults.get("long_wait_chance", 0)
+            )
+            long_wait = settings.get("long_wait", defaults.get("long_wait", 0))
+
+            if (
+                isinstance(long_wait_chance, bool)
+                or not isinstance(long_wait_chance, (int, float))
+                or not 0 <= long_wait_chance <= 1
+            ):
+                raise ConfigError(
+                    f'[get_accounts] "long_wait_chance" in {path} must be a number from 0 to 1 (0.1 = 10%).'
+                )
+
+            if isinstance(long_wait, bool) or not isinstance(long_wait, (int, float)) or long_wait < 0:
+                raise ConfigError(
+                    f'[get_accounts] "long_wait" in {path} must be a number of seconds (0 or more).'
+                )
+
             accounts.append(
                 {
                     "name": str(settings.get("name") or username or f"account{number}"),
+                    "long_wait_chance": long_wait_chance,
+                    "long_wait": long_wait,
                     "credentials_file_path": path,
                     "timeout": timeout,
                     "premium_downloads": bool(

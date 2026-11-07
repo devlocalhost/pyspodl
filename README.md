@@ -110,7 +110,7 @@ downloaded once; the same file is never written twice.
 
 **Skipping existing tracks:** before a track is downloaded, pyspodl checks whether the
 target `.ogg` file already exists. If it does, the track is skipped immediately and the
-`timeout` wait is **not** applied; only real downloads wait. Re-running a link
+wait is **not** applied; only real downloads wait. Re-running a link
 after an interrupted album/playlist download therefore continues right where it stopped.
 
 ## Multiple accounts
@@ -167,7 +167,7 @@ client_id = ""      # from the Spotify dashboard
 client_secret = ""  # from the Spotify dashboard
 
 [downloading]
-timeout = 2                    # default seconds to wait before each *new* download (0 = no wait)
+timeout = 2                    # mean seconds to wait before each *new* download, varied randomly by +/-20% (0 = no wait)
 premium_downloads = false      # default quality: true = "very high" (premium only)
 download_path = "./Downloads"  # where tracks are saved
 set_metadata = true            # write tags and cover art
@@ -183,7 +183,7 @@ Accounts are not configured here but in the `credentials/` directory, see
 | --- | --- |
 | `credentials_dir` | Optional, under `[account]`: directory with the account files, relative to the config file (default `credentials`). |
 | `client_id`, `client_secret` | Credentials of your Spotify API app; used to request an API token (kept in memory and renewed automatically, the old `token` entry is no longer used). |
-| `timeout` | Default for accounts without their own `timeout`: seconds an account waits before each new download, to be gentle with your account (no bans reported so far). Skipped tracks never wait, and every account waits independently. Must be a number without quotes. |
+| `timeout` | Default for accounts without their own `timeout`: mean seconds an account waits before each new download (every wait is randomly 20% shorter or longer, e.g. `30` waits 24 to 36 seconds), to be gentle with your account (no bans reported so far). Skipped tracks never wait, and every account waits independently. Must be a number without quotes. |
 | `premium_downloads` | Default for accounts without their own value: `true` for "very high" quality (premium only), otherwise "high". |
 | `download_path` | Base directory for downloads. |
 | `set_metadata` | Write artist, album, title, date, track/disc number and cover art as Ogg tags. |

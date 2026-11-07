@@ -1,5 +1,6 @@
 import collections
 import os
+import random
 import sys
 import threading
 import time
@@ -10,6 +11,7 @@ import requests
 from librespot.metadata import TrackId
 from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 
+WAIT_VARIATION = 0.2  # waits vary randomly by +/- 20% around the configured mean
 MAX_CONSECUTIVE_FAILURES = 3  # a worker with this many failures in a row gives up
 
 
@@ -39,6 +41,7 @@ class Downloader:
         self.stop = threading.Event()  # set on ctrl+c, ends all workers
 
         self.in_progress = set()  # target files that are being downloaded right now
+        self.part_files = set()  # unfinished *.part files (removed on abort)
         self.source = iter(())  # shared stream of track urls
         self.seen = set()
         self.retry = collections.deque()  # (url, accounts that already failed it)
@@ -264,14 +267,27 @@ class Downloader:
 
     def wait_before_download(self, account):
         """
-        sleep for the account's "timeout" (only called when a track is really
-        going to be downloaded, never for skipped tracks)
+        sleep before a download. the account's "timeout" is the mean, every wait is
+        randomly 20% shorter or longer so the requests don't follow a fixed rhythm.
+        after a song the account may have rolled a longer break ("long_wait"), which
+        is then taken instead of the normal wait.
+        only called when a track is really going to be downloaded, never for skipped tracks
         """
 
-        if account["timeout"] > 0:
-            self.log(account, f"Sleeping for {account['timeout']} seconds...")
+        mean = account["timeout"]
+        longer = account.pop("long_wait_due", False)
 
-            if self.stop.wait(account["timeout"]):
+        if longer:
+            mean = account["long_wait"]  # the longer break replaces the normal wait
+
+        if mean > 0:
+            delay = mean * random.uniform(1 - WAIT_VARIATION, 1 + WAIT_VARIATION)
+            self.log(
+                account,
+                f"{'Taking a longer break:' if longer else 'Sleeping for'} {delay:.1f} seconds...",
+            )
+
+            if self.stop.wait(delay):
                 raise RuntimeError("interrupted")
 
     def download_track(self, url, account):
@@ -338,6 +354,9 @@ class Downloader:
             if directory_path:
                 os.makedirs(directory_path, exist_ok=True)
 
+            with self.lock:
+                self.part_files.add(part_path)
+
             with (
                 open(part_path, "wb+") as track_file,
                 tqdm.tqdm(
@@ -375,16 +394,49 @@ class Downloader:
             os.replace(part_path, final_path)
 
         except BaseException:
-            if os.path.exists(part_path):
-                os.remove(part_path)
-
+            self.remove_part_file(part_path)
             raise
 
         finally:
             with self.lock:
                 self.in_progress.discard(final_path)
+                self.part_files.discard(part_path)
 
         return "downloaded"
+
+    @staticmethod
+    def remove_part_file(path):
+        """delete an unfinished download, ignoring files that are already gone"""
+
+        try:
+            os.remove(path)
+
+        except OSError:
+            pass
+
+    def abort(self, threads):
+        """
+        stop all workers after ctrl+c / SIGTERM: give them a moment to clean up
+        after themselves, then delete whatever unfinished files are left (a
+        worker stuck in a network read can't react before the program ends)
+        """
+
+        self.stop.set()
+        print("\n[download] Interrupted, cleaning up...")
+
+        try:
+            deadline = time.time() + 5
+
+            for thread in threads:
+                thread.join(max(0, deadline - time.time()))
+
+        except KeyboardInterrupt:
+            pass  # impatient: skip the waiting, still clean up below
+
+        for path in list(self.part_files):
+            self.remove_part_file(path)
+
+        sys.exit(130)
 
     def worker(self, account):
         """
@@ -409,6 +461,11 @@ class Downloader:
                 try:
                     status = self.download_track(url, account)
                     failures = 0
+
+                    # after a finished song there is a chance for a longer break
+                    # before the next download (so nothing waits at the very end)
+                    if status == "downloaded" and random.random() < account["long_wait_chance"]:
+                        account["long_wait_due"] = True
 
                     with self.lock:
                         self.stats[account["name"]][status] += 1
@@ -477,13 +534,7 @@ class Downloader:
                     thread.join(0.5)
 
         except KeyboardInterrupt:
-            self.stop.set()
-            print("\n[download] Interrupted, cleaning up...")
-
-            for thread in threads:
-                thread.join(5)
-
-            sys.exit(130)
+            self.abort(threads)
 
         print("\n[download] Summary")
 

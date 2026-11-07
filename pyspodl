@@ -6,6 +6,7 @@ pyspodl - a spotify downloader using librespot
 
 import importlib.util
 import os
+import signal
 import subprocess
 import sys
 import venv
@@ -113,5 +114,17 @@ def main():
         downloader.download(link)
 
 
+def terminate(signum, frame):  # pylint: disable=unused-argument
+    """treat SIGTERM (kill, systemd stop) like ctrl+c so unfinished files get cleaned up"""
+
+    raise KeyboardInterrupt
+
+
 if __name__ == "__main__":
-    main()
+    signal.signal(signal.SIGTERM, terminate)
+
+    try:
+        main()
+
+    except KeyboardInterrupt:
+        sys.exit(130)

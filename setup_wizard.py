@@ -412,6 +412,14 @@ def setup(config_path=None):
     timeout = ask_number(
         "Seconds to wait between downloads (skipped tracks never wait)", 2
     )
+    long_wait_chance = ask_number(
+        "Chance in percent of a longer break after a downloaded song (0 = never)", 10
+    )
+    long_wait = (
+        ask_number("Mean length of such a longer break in seconds", 120)
+        if long_wait_chance > 0
+        else 0
+    )
     set_metadata = ask_yes_no("Write tags and cover art to the files?", True)
     track_format = ask(
         "Track path format (artist, album, title, tracknumber, year)",
@@ -429,6 +437,8 @@ def setup(config_path=None):
         "downloading": {
             "timeout": timeout,
             "premium_downloads": premium,
+            "long_wait_chance": min(long_wait_chance, 100) / 100,
+            "long_wait": long_wait,
             "download_path": download_path,
             "set_metadata": set_metadata,
             "track_format": track_format,
