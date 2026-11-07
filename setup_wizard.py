@@ -271,11 +271,29 @@ def confirm_overwrite(path):
     return not os.path.exists(path) or ask_yes_no(f"{path} exists. Overwrite?", False)
 
 
-def add_account(directory, defaults, taken):
+def existing_usernames(directory):
+    """usernames of the accounts already stored in the credentials directory"""
+
+    names = set()
+
+    if os.path.isdir(directory):
+        for filename in os.listdir(directory):
+            if filename.endswith(".json"):
+                try:
+                    with open(os.path.join(directory, filename), encoding="utf-8") as file:
+                        names.add(json.load(file).get("username"))
+
+                except (OSError, ValueError, AttributeError):
+                    pass
+
+    return names
+
+
+def add_account(directory, defaults):
     """
-    log in one more spotify account with librespot-auth and save its credentials
-    to <directory>/credentials-<username>.json. returns the [[accounts]] entry,
-    or None when the account is already configured
+    log in one more spotify account with librespot-auth and save it to
+    <directory>/<username>.json together with its own settings
+    (name, premium_downloads, timeout). returns the path, or None if skipped
     """
 
     print(
@@ -293,56 +311,60 @@ def add_account(directory, defaults, taken):
 
     username = credentials["username"]
 
-    if username in taken:
+    if username in existing_usernames(directory):
         print(f"Account '{username}' is already configured, skipping.")
         return None
 
-    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", username)
-    path = os.path.join(directory, f"credentials-{safe_name}.json")
+    path = os.path.join(directory, re.sub(r"[^A-Za-z0-9._-]", "_", username) + ".json")
 
     if not confirm_overwrite(path):
         sys.exit("Setup aborted, nothing changed.")
 
-    os.makedirs(directory, exist_ok=True)
-    write_private(path, json.dumps(credentials))
-    print(f"Credentials for '{username}' saved to {path}")
-
-    premium = ask_yes_no(
+    # settings of this account, stored in its own file (change them there any time)
+    credentials["name"] = username
+    credentials["premium_downloads"] = ask_yes_no(
         f"Is '{username}' a premium account ('very high' quality)?",
         defaults["premium_downloads"],
     )
-    timeout = ask_number(
+    credentials["timeout"] = ask_number(
         f"Seconds '{username}' waits between its downloads "
         "(independent of the other accounts, skipped tracks never wait)",
         defaults["timeout"],
     )
 
-    return {
-        "name": username,
-        "credentials_file_path": path,
-        "premium_downloads": premium,
-        "timeout": timeout,
-    }
+    os.makedirs(directory, mode=0o700, exist_ok=True)
+    write_private(path, json.dumps(credentials, indent=2) + "\n")
+    print(f"Account '{username}' saved to {path}")
+
+    return path
 
 
-def add_accounts_loop(directory, defaults, accounts):
-    """keep adding accounts until the user is done; mutates and returns the list"""
+def add_accounts_loop(directory, defaults):
+    """keep adding accounts until the user is done; returns the saved paths"""
 
-    taken = {account["name"] for account in accounts}
+    saved = []
 
     while True:
-        account = add_account(directory, defaults, taken)
+        path = add_account(directory, defaults)
 
-        if account:
-            accounts.append(account)
-            taken.add(account["name"])
+        if path:
+            saved.append(path)
 
         if not ask_yes_no("Add another account?", False):
-            return accounts
+            return saved
+
+
+def credentials_directory(config, config_file):
+    """the directory the accounts live in (see Config.get_accounts)"""
+
+    return os.path.join(
+        os.path.dirname(config_file),
+        os.path.expanduser(config.get("account", {}).get("credentials_dir", "credentials")),
+    )
 
 
 def add_account_to_config(config_path=None):
-    """pyspodl --add-account: add another account to an existing config"""
+    """pyspodl --add-account: add accounts to an existing setup"""
 
     config_file = os.path.abspath(config_path or "config.toml")
 
@@ -357,31 +379,9 @@ def add_account_to_config(config_path=None):
         "premium_downloads": config.get("downloading", {}).get("premium_downloads", False),
         "timeout": config.get("downloading", {}).get("timeout", 2),
     }
-    accounts = config.get("accounts") or []
 
-    # an older config has a single account in [account]: keep it as the first one
-    legacy = config.get("account", {}).get("credentials_file_path")
-
-    if not accounts and legacy:
-        accounts.append(
-            {
-                "name": "account1",
-                "credentials_file_path": legacy,
-                "premium_downloads": defaults["premium_downloads"],
-                "timeout": defaults["timeout"],
-            }
-        )
-
-    shutil.copyfile(config_file, config_file + ".bak")
-    print(f"Backup of the old config: {config_file}.bak (comments are not preserved)")
-
-    config["accounts"] = add_accounts_loop(
-        os.path.dirname(config_file), defaults, accounts
-    )
-    config.get("account", {}).pop("credentials_file_path", None)
-
-    write_private(config_file, toml.dumps(config))
-    print(f"\nConfig updated: {len(config['accounts'])} account(s) in {config_file}")
+    saved = add_accounts_loop(credentials_directory(config, config_file), defaults)
+    print(f"\nAdded {len(saved)} account(s).")
 
 
 def setup(config_path=None):
@@ -424,15 +424,6 @@ def setup(config_path=None):
         "Every account downloads at the same time, each with its own wait time,\n"
         "all working on the same album, playlist or artist."
     )
-    accounts = add_accounts_loop(
-        os.path.dirname(config_file),
-        {"premium_downloads": premium, "timeout": timeout},
-        [],
-    )
-
-    if not accounts:
-        sys.exit("No account was added, nothing written.")
-
     config = {
         "account": {"client_id": client_id, "client_secret": client_secret},
         "downloading": {
@@ -442,13 +433,20 @@ def setup(config_path=None):
             "set_metadata": set_metadata,
             "track_format": track_format,
         },
-        "accounts": accounts,
     }
+
+    saved = add_accounts_loop(
+        credentials_directory(config, config_file),
+        {"premium_downloads": premium, "timeout": timeout},
+    )
+
+    if not saved:
+        sys.exit("No account was added, nothing written.")
 
     write_private(config_file, toml.dumps(config))
 
     print(
-        f"\nDone! Config written to {config_file} ({len(accounts)} account(s))\n"
+        f"\nDone! Config written to {config_file} ({len(saved)} account(s) in {credentials_directory(config, config_file)})\n"
         'Try it: python3 pyspodl -l "https://open.spotify.com/track/..."\n'
         "Add more accounts later with: python3 pyspodl --add-account"
     )

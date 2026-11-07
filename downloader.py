@@ -63,6 +63,18 @@ class Downloader:
                 account["index"] = len(self.accounts)
                 self.accounts.append(account)
 
+                try:
+                    free = account["session"].get_user_attribute("type") == "free"
+
+                except Exception:  # pylint: disable=broad-except
+                    free = False
+
+                if free:
+                    print(
+                        f"[Downloader] WARNING: {account['name']} is a free account. Spotify "
+                        "refuses audio keys to free accounts, downloads will most likely fail."
+                    )
+
             except RuntimeError as exc:
                 print(f"{exc}\nContinuing without {account['name']}.")
 

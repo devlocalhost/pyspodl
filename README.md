@@ -4,8 +4,8 @@ Built on [librespot-python by kokarare1212](https://github.com/kokarare1212/libr
 
 ## What is different from other downloaders?
 Maybe nothing. pyspodl does one thing: download tracks, albums, playlists and whole artists
-straight from Spotify (it does not use another source) in "high" quality, or in
-"very high" quality with a premium account. Tracks that already exist on disk are
+straight from Spotify (it does not use another source) in "high" or, with a premium
+account, "very high" quality. A Spotify **Premium** account is required. Tracks that already exist on disk are
 skipped without any waiting, and you can download with several accounts at once.
 
 ## Contents
@@ -45,7 +45,7 @@ into `bin/`. On other platforms, compile it (`cargo build --release`) and put it
 your `PATH`; the setup also accepts a full path.
 
 ## Setup
-Everything (login, `credentials.json`, `config.toml`) is handled by one command:
+Everything (login, the `credentials/` files, `config.toml`) is handled by one command:
 
 ```sh
 python3 pyspodl --setup
@@ -65,8 +65,9 @@ The guided setup will:
    on a machine in the same network, click the "Connect to a device" button and pick
    **pyspodl**. The setup detects the generated credentials by itself (waits up to
    5 minutes), converts them to the format pyspodl needs and saves them as
-   `credentials-<username>.json` next to the config (readable by your user only). No
-   manual editing required. Then you can add another account, see below.
+   `credentials/<username>.json` next to the config (readable by your user only). No
+   manual editing required. It also asks for the account's own settings (premium, wait time),
+   which are stored in that same file. Then you can add another account, see below.
 
 The result is `config.toml`. Use `-c /path/to/config.toml` together with `--setup` to write the config somewhere
 else. Existing files are never overwritten without asking.
@@ -85,7 +86,9 @@ else. Existing files are never overwritten without asking.
    ```json
    {"username": "BLABLA", "credentials": "BLABLABLA", "type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS"}
    ```
-3. Create `config.toml` as described in [Config file](#config-file).
+3. Save it as `credentials/<username>.json` next to `config.toml`; optionally add
+   `"premium_downloads"` / `"timeout"` to it ([Multiple accounts](#multiple-accounts)).
+4. Create `config.toml` as described in [Config file](#config-file).
 </details>
 
 ## Usage
@@ -116,18 +119,40 @@ download thread** with its **own wait time**, and all accounts work on the **sam
 track list: for an album, playlist or artist every account takes the next track that
 nobody has claimed yet, so the job finishes roughly N times faster with N accounts.
 
+**One file per account.** Accounts live in the `credentials/` directory next to
+`config.toml` (change it with `credentials_dir` under `[account]`). Every `*.json` file
+there is one account: the login data written by the setup plus the account's own settings.
+
+```json
+{
+  "username": "31abc...",
+  "credentials": "...",
+  "type": "AUTHENTICATION_STORED_SPOTIFY_CREDENTIALS",
+  "name": "my main account",
+  "premium_downloads": true,
+  "timeout": 30,
+  "enabled": true
+}
+```
+
+`name` (label in the output), `premium_downloads` and `timeout` are optional and override
+the defaults from `[downloading]`. Set `"enabled": false` to skip an account without
+deleting it. Files that don't end in `.json` (like backups) are ignored.
+
 - Add accounts during `--setup`, or later with `python3 pyspodl --add-account` (log the
-  Spotify desktop app in to the other account first). The old config is saved as
-  `config.toml.bak`.
-- Every account has its own `timeout` and `premium_downloads` (see below); accounts without
-  their own values use the ones from `[downloading]`.
+  Spotify desktop app in to the other account first). `config.toml` isn't touched.
 - Progress bars are shown per account. A file only gets its final name when it is
   complete (unfinished downloads are `*.ogg.part` and are cleaned up), so an interrupted
   run never leaves broken files that would be skipped next time.
-- If a track fails for one account, another account tries it. An account that fails
+- If a track fails for one account, a different account tries it. An account that fails
   three tracks in a row stops, the others continue. An account that can't log in at
   startup is skipped with a warning.
 - Ctrl+C stops all accounts and removes unfinished files.
+
+**Free accounts don't work.** Spotify refuses to hand out audio keys to free accounts
+for third-party clients; in tests, free accounts logged in fine but every track failed with
+`Audio key error, code: 1`, music as well as audiobooks. pyspodl warns at startup when an
+account is free. Use Premium accounts.
 
 Note that downloading with several accounts at once is more visible to Spotify than a single
 slow download; use reasonable wait times.
@@ -148,29 +173,18 @@ download_path = "./Downloads"  # where tracks are saved
 set_metadata = true            # write tags and cover art
 track_format = "{artist}/{album}/{title}" # artist, album, title, tracknumber, year
 # the format above saves a song as: download_path/Nas/Illmatic/The World Is Yours.ogg
-
-# one table per account, each downloads on its own thread
-[[accounts]]
-name = "me@example.com"        # label shown in the output
-credentials_file_path = "/home/me/pyspodl/credentials-me.json"
-premium_downloads = true       # optional, overrides [downloading]
-timeout = 30                   # optional, overrides [downloading]
-
-[[accounts]]
-name = "friend"
-credentials_file_path = "/home/me/pyspodl/credentials-friend.json"
-timeout = 45
 ```
 
-An older config with a single `credentials_file_path` under `[account]` still works (it is
-used as one account).
+Accounts are not configured here but in the `credentials/` directory, see
+[Multiple accounts](#multiple-accounts). Older configs with `[[accounts]]` tables or a single
+`credentials_file_path` under `[account]` still work.
 
 | Key | Meaning |
 | --- | --- |
-| `[[accounts]]` | One table per Spotify account: `credentials_file_path` (required, full path to the converted credentials file), `name` (label), `timeout` and `premium_downloads` (optional, override the defaults below). |
+| `credentials_dir` | Optional, under `[account]`: directory with the account files, relative to the config file (default `credentials`). |
 | `client_id`, `client_secret` | Credentials of your Spotify API app; used to request an API token (kept in memory and renewed automatically, the old `token` entry is no longer used). |
-| `timeout` | Seconds an account waits before each new download, to be gentle with your account (no bans reported so far). Skipped tracks never wait, and every account waits independently. Must be a number without quotes. |
-| `premium_downloads` | `true` for "very high" quality (premium only), otherwise "high". |
+| `timeout` | Default for accounts without their own `timeout`: seconds an account waits before each new download, to be gentle with your account (no bans reported so far). Skipped tracks never wait, and every account waits independently. Must be a number without quotes. |
+| `premium_downloads` | Default for accounts without their own value: `true` for "very high" quality (premium only), otherwise "high". |
 | `download_path` | Base directory for downloads. |
 | `set_metadata` | Write artist, album, title, date, track/disc number and cover art as Ogg tags. |
 | `track_format` | Path template below `download_path`; `.ogg` is appended. Available fields: `{artist}`, `{album}`, `{title}`, `{tracknumber}`, `{year}`. |
@@ -182,10 +196,11 @@ Run `git pull` in the directory where you cloned pyspodl. New dependencies are i
 - **Dependency install fails**: `librespot-python` is installed from GitHub, so `git` and internet access are required. Delete `.venv/` to start over.
 - **`librespot-auth` not found / download fails**: install it and add it to `PATH`, or enter its full path when the setup asks. Prebuilt releases exist for x86_64 Linux only.
 - **"pyspodl" doesn't show up in Spotify**: the desktop app and the machine running the setup must be in the same network; use the desktop app, not the phone or web player.
-- **Session / login errors**: the credentials may be stale. Run `python3 pyspodl --setup` again and choose to create new credentials.
+- **Session / login errors**: the credentials may be stale. Delete the account's file in `credentials/` and run `python3 pyspodl --add-account`.
 - **`"timeout" ... must be a number`**: write `timeout = 2`, not `timeout = "2"`.
 - **Token errors / HTTP 401**: check `client_id` and `client_secret`.
-- **One account keeps failing**: re-run `python3 pyspodl --setup` or `--add-account` for it to create fresh credentials (an existing entry for the same user is skipped, delete it from the config first).
+- **`Audio key error, code: 1` / `Failed fetching audio key`**: the account is almost certainly a free account (see above).
+- **One account keeps failing**: delete its file from `credentials/` and run `python3 pyspodl --add-account` to create fresh credentials (an existing file for the same user is skipped).
 
 ## Help
 Feel free to fork or open pull requests. If you fork, please leave

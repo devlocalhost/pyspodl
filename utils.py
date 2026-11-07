@@ -1,9 +1,12 @@
 import base64
+import os
 import sys
 import threading
 import time
 
 import requests
+
+import librespot_patch
 
 from librespot.core import Session
 from mutagen.flac import Picture
@@ -107,20 +110,47 @@ class Utils:
             pass  # fuck you
             # seriously fuck it, idk why it happens
 
-    def get_session(self, credentials_path, name="account"):
+    def get_session(self, credentials_path, name="account", attempts=3):
         """
-        create a user session from a credentials file and return it
+        create a user session from a credentials file and return it.
+        connection problems are retried, a missing/broken file is reported clearly
         """
+
+        librespot_patch.apply()  # several sessions must not share their state
+
+        if not os.path.isfile(credentials_path):
+            raise RuntimeError(
+                f"[get_session] Credentials file of {name} not found: {credentials_path}"
+            )
+
+        # librespot would otherwise rewrite ./credentials.json (world readable)
+        # and fill a ./cache directory on every login
+        conf = (
+            Session.Configuration.Builder()
+            .set_store_credentials(False)
+            .set_cache_enabled(False)
+            .build()
+        )
 
         print(f"[get_session] Trying to create a session for {name}...")
 
-        try:
-            return Session.Builder().stored_file(credentials_path).create()
+        for attempt in range(1, attempts + 1):
+            try:
+                return Session.Builder(conf).stored_file(credentials_path).create()
 
-        except Exception as exc:
-            raise RuntimeError(
-                f"[get_session] Could not create a session for {name}: {exc}"
-            ) from exc
+            except OSError as exc:  # connection refused/reset, timeouts: try again
+                if attempt == attempts:
+                    raise RuntimeError(
+                        f"[get_session] Could not connect for {name}: {exc}"
+                    ) from exc
+
+                time.sleep(2 * attempt)
+
+            except Exception as exc:
+                raise RuntimeError(
+                    f"[get_session] Could not create a session for {name}: {exc}\n"
+                    "(wrong or expired credentials? run: pyspodl --add-account)"
+                ) from exc
 
     def get_id_type_from_url(self, url):
         """
