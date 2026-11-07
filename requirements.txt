@@ -1,0 +1,6 @@
+git+https://github.com/kokarare1212/librespot-python
+requests
+Pillow
+mutagen
+toml
+tqdm

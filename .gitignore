@@ -1,4 +1,6 @@
-credentials.json
+credentials*.json
 config.toml
 __pycache__
-__pycache__/*
+Downloads
+bin
+.venv
