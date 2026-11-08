@@ -1,9 +1,12 @@
+import base64
 import os
 import sys
-import base64
+import threading
+import time
 
 import requests
-import toml
+
+import librespot_patch
 
 from librespot.core import Session
 from mutagen.flac import Picture
@@ -12,17 +15,23 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.oggvorbis import OggVorbisHeaderError
 from mutagen.ogg import error
 
-from config import ConfigError
 
 
 class Utils:
+    TOKEN_LIFETIME = 3000  # spotify tokens last an hour, renew a bit earlier
+
     def __init__(self, config):
         self.config = config
+
+        # the token lives in memory only, shared by all download threads
+        self._token = None
+        self._token_time = 0
+        self._token_lock = threading.Lock()
 
     def generate_new_token(self):
         """
         tokens are not permament, they expire after an hour,
-        so when invalid, regenerates a new one
+        so when invalid or old, requests a new one (call with the lock held)
         """
 
         client_id = self.config.get_config_value("account", "client_id")
@@ -38,60 +47,41 @@ class Utils:
             timeout=10,
         ).json()
 
-        config = self.config.read_config()
+        if "access_token" not in resp:
+            raise RuntimeError(
+                f"[generate_new_token] No token received, check client_id and client_secret: {resp}"
+            )
 
-        print("[generate_new_token] Trying to update token...")
+        self._token = resp["access_token"]
+        self._token_time = time.time()
 
-        if config:
-            config["account"]["token"] = resp["access_token"]
-
-            try:
-                with open("config.toml", "w", encoding="utf-8") as f:
-                    toml.dump(config, f)
-                    print("[generate_new_token] Token was updated")
-
-            except Exception as e:
-                sys.exit(
-                    f'[generate_new_token] Error updating the configuration file: {e}\n\nManually update token from the config.toml file by yourself with: "{resp["access_token"]}"'
-                )
-
-        try:
-            os.execv(sys.argv[0], sys.argv)
-
-        except FileNotFoundError:
-            sys.exit("[generate_new_token] Token was updated, run pyspodl again")
-
-    def get_token(self):
+    def get_token(self, stale=None):
         """
-        gets the temporary saved token from the config file
+        get the api token. pass the token that was just rejected (HTTP 401) as
+        "stale" to renew it - unless another thread already did
         """
 
-        try:
-            token = self.config.get_config_value("account", "token")
+        with self._token_lock:
+            if (
+                self._token is None
+                or self._token == stale
+                or time.time() - self._token_time > self.TOKEN_LIFETIME
+            ):
+                self.generate_new_token()
 
-        except ConfigError:
-            self.generate_new_token()
+            return self._token
 
-        headers = {"Authorization": f"Bearer {token}"}
-        resp = requests.get(
-            "https://api.spotify.com/v1/search?q=home+resonance&type=track",
-            headers=headers,
-            timeout=10,
-        )
-
-        if resp.status_code == 401:
-            self.generate_new_token()
-
-        return token
-
-    def set_metadata(self, metadata, cover_image, filename):
+    def set_metadata(self, metadata, cover_image, path):
         """
-        set metadata to a file (these are ogg tags, not id3!)
+        set metadata to an ogg file (these are ogg tags, not id3!)
         """
 
-        file = OggVorbis(f"{filename}.ogg")
+        file = OggVorbis(path)
 
         for key, value in metadata.items():
+            if value is None:
+                continue
+
             if isinstance(value, list):
                 file[key] = [str(v) for v in value]
             else:
@@ -123,28 +113,47 @@ class Utils:
             pass  # fuck you
             # seriously fuck it, idk why it happens
 
-    def get_session(self):
+    def get_session(self, credentials_path, name="account", attempts=3):
         """
-        create a user session and return it
+        create a user session from a credentials file and return it.
+        connection problems are retried, a missing/broken file is reported clearly
         """
 
-        try:
-            print("[get_session] Trying to create a session...")
+        librespot_patch.apply()  # several sessions must not share their state
 
-            session = (
-                Session.Builder()
-                .stored_file(
-                    self.config.get_config_value("account", "credentials_file_path")
-                )
-                .create()
+        if not os.path.isfile(credentials_path):
+            raise RuntimeError(
+                f"[get_session] Credentials file of {name} not found: {credentials_path}"
             )
 
-            return session
+        # librespot would otherwise rewrite ./credentials.json (world readable)
+        # and fill a ./cache directory on every login
+        conf = (
+            Session.Configuration.Builder()
+            .set_store_credentials(False)
+            .set_cache_enabled(False)
+            .build()
+        )
 
-        except Exception as exc:
-            sys.exit(
-                f"[get_session] An issue occured while trying to create session:\n{exc}"
-            )
+        print(f"[get_session] Trying to create a session for {name}...")
+
+        for attempt in range(1, attempts + 1):
+            try:
+                return Session.Builder(conf).stored_file(credentials_path).create()
+
+            except OSError as exc:  # connection refused/reset, timeouts: try again
+                if attempt == attempts:
+                    raise RuntimeError(
+                        f"[get_session] Could not connect for {name}: {exc}"
+                    ) from exc
+
+                time.sleep(2 * attempt)
+
+            except Exception as exc:
+                raise RuntimeError(
+                    f"[get_session] Could not create a session for {name}: {exc}\n"
+                    "(wrong or expired credentials? run: pyspodl --add-account)"
+                ) from exc
 
     def get_id_type_from_url(self, url):
         """

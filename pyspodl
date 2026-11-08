@@ -1,25 +1,130 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """
 pyspodl - a spotify downloader using librespot
 """
 
-from arguments import get_arguments
+import importlib.util
+import os
+import signal
+import subprocess
+import sys
+import venv
 
-from downloader import Downloader
-from config import Config
-from utils import Utils
+PROJECT_DIR = os.path.dirname(os.path.realpath(__file__))
+VENV_DIR = os.path.join(PROJECT_DIR, ".venv")
+REQUIREMENTS = os.path.join(PROJECT_DIR, "requirements.txt")
+
+# import names of the packages in requirements.txt
+REQUIRED_MODULES = ("librespot", "requests", "PIL", "mutagen", "toml", "tqdm")
+
+
+def venv_python():
+    """path to the python interpreter inside the project's virtual environment"""
+
+    if os.name == "nt":
+        return os.path.join(VENV_DIR, "Scripts", "python.exe")
+
+    return os.path.join(VENV_DIR, "bin", "python")
+
+
+def bootstrap():
+    """
+    make sure pyspodl runs in a virtual environment with all dependencies.
+
+    outside a virtualenv: create <project>/.venv (first run only) and restart
+    inside it. inside a virtualenv (ours, or one you activated): install
+    missing dependencies from requirements.txt.
+    set PYSPODL_NO_VENV=1 to skip all of this and manage dependencies yourself.
+    """
+
+    if os.environ.get("PYSPODL_NO_VENV"):
+        return
+
+    if sys.version_info < (3, 10):
+        sys.exit("pyspodl needs python 3.10 or newer.")
+
+    if sys.prefix == sys.base_prefix:  # not inside a virtualenv
+        if not os.path.exists(venv_python()):
+            print(f"[bootstrap] Creating virtual environment in {VENV_DIR} ...")
+
+            try:
+                venv.create(VENV_DIR, with_pip=True)
+
+            except Exception as exc:  # pylint: disable=broad-except
+                sys.exit(
+                    f"[bootstrap] Could not create the virtual environment: {exc}\n"
+                    "On Debian/Ubuntu install it with: sudo apt install python3-venv\n"
+                    "(a half-created .venv may need to be deleted before retrying)"
+                )
+
+        os.execv(venv_python(), [venv_python(), os.path.realpath(__file__)] + sys.argv[1:])
+
+    missing = [m for m in REQUIRED_MODULES if importlib.util.find_spec(m) is None]
+
+    if missing:
+        print(f"[bootstrap] Missing modules: {', '.join(missing)}. Installing requirements...")
+
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "-r", REQUIREMENTS]
+            )
+
+        except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+            sys.exit(
+                f"[bootstrap] Installing the dependencies failed: {exc}\n"
+                "Make sure git is installed (librespot-python comes from GitHub), or "
+                f"install them yourself: pip install -r {REQUIREMENTS}"
+            )
+
+        print("[bootstrap] Dependencies installed.\n")
+
+
+bootstrap()
+
+# pylint: disable=wrong-import-position
+from arguments import get_arguments  # noqa: E402
+
+from downloader import Downloader  # noqa: E402
+from config import Config  # noqa: E402
+from utils import Utils  # noqa: E402
+
 
 def main():
     arguments = get_arguments()
+
+    if arguments.setup:
+        from setup_wizard import setup
+
+        setup(arguments.config_path)
+        return
+
+    if arguments.add_account:
+        from setup_wizard import add_account_to_config
+
+        add_account_to_config(arguments.config_path)
+        return
+
     config = Config(arguments.config_path)
     utils = Utils(config)
 
     downloader = Downloader(config, utils)
 
-    for link in arguments.link.split(" "):
+    for link in arguments.link.split():
         downloader.download(link)
 
 
+def terminate(signum, frame):  # pylint: disable=unused-argument
+    """treat SIGTERM (kill, systemd stop) like ctrl+c so unfinished files get cleaned up"""
+
+    raise KeyboardInterrupt
+
+
 if __name__ == "__main__":
-    main()
+    signal.signal(signal.SIGTERM, terminate)
+
+    try:
+        main()
+
+    except KeyboardInterrupt:
+        sys.exit(130)

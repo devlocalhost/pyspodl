@@ -23,8 +23,24 @@ def get_arguments():
     parser.add_argument(
         "-c", "--config-path", type=str, help="the path of the config file"
     )
+    parser.add_argument(
+        "--setup",
+        action="store_true",
+        help="interactive first-time setup (librespot-auth, credentials, config)",
+    )
 
-    return parser.parse_args()
+    parser.add_argument(
+        "--add-account",
+        action="store_true",
+        help="log in one more spotify account and add it to the config",
+    )
+
+    args = parser.parse_args()
+
+    if not (args.setup or args.add_account or args.link):
+        parser.error("-l/--link is required (or use --setup for first-time setup)")
+
+    return args
 
 
 if __name__ == "__main__":
